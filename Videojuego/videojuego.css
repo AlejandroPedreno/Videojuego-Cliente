@@ -1,0 +1,8 @@
+#miCanvas { border: solid 1px #ccc; margin: 20px;}
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh; /* Ocupa toda la altura de la pantalla */
+    margin: 0; /* Elimina el margen predeterminado del body */
+}
