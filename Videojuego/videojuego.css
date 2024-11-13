@@ -6,3 +6,15 @@ body {
     height: 100vh; /* Ocupa toda la altura de la pantalla */
     margin: 0; /* Elimina el margen predeterminado del body */
 }
+
+.play{                                                  /*Terminar botón play*/
+        background: none;
+        width: 50px;
+        height: 50px;
+        border: solid 5px #fff;
+        border-radius: 100%;
+        position: relative; 
+        text-indent:-9999px;
+        box-shadow: 1px 1px 3px #999999;
+}
+
