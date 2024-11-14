@@ -7,14 +7,25 @@ body {
     margin: 0; /* Elimina el margen predeterminado del body */
 }
 
-.play{                                                  /*Terminar botón play*/
-        background: none;
-        width: 50px;
-        height: 50px;
-        border: solid 5px #fff;
-        border-radius: 100%;
-        position: relative; 
-        text-indent:-9999px;
-        box-shadow: 1px 1px 3px #999999;
+#canvasContainer {
+    position: relative; /* Esto permite posicionar el botón sobre el canvas */
 }
 
+.play {
+    background: white;
+    width: 120px;
+    height: 120px;
+    border: solid 5px #fff;
+    border-radius: 50%;
+    position: absolute; /* Posiciona el botón sobre el canvas */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Ajuste para centrar exacto */
+    box-shadow: 1px 2px 4px #000000;
+}
+
+.play::before {
+    content: '\25B6'; /* Código Unicode del triángulo de "play" */
+    font-size: 50px; /* Tamaño del icono */
+    color: #000000; /* Color del icono (puedes cambiar el color según prefieras) */
+}
