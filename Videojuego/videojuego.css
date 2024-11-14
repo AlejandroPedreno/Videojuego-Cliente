@@ -3,12 +3,12 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 100vh; /* Ocupa toda la altura de la pantalla */
-    margin: 0; /* Elimina el margen predeterminado del body */
+    height: 100vh;                                     /* Ocupa toda la altura de la pantalla */
+    margin: 0;                                         /* Elimina el margen predeterminado del body */
 }
 
 #canvasContainer {
-    position: relative; /* Esto permite posicionar el botón sobre el canvas */
+    position: relative;
 }
 
 .play {
@@ -17,15 +17,26 @@ body {
     height: 120px;
     border: solid 5px #fff;
     border-radius: 50%;
-    position: absolute; /* Posiciona el botón sobre el canvas */
+    position: absolute;                                /* Posiciona el botón sobre el canvas */
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%); /* Ajuste para centrar exacto */
+    transform: translate(-50%, -50%);
     box-shadow: 1px 2px 4px #000000;
+    z-index: 2;                                        /* El botón encima de la capa de opacidad */
 }
 
 .play::before {
-    content: '\25B6'; /* Código Unicode del triángulo de "play" */
-    font-size: 50px; /* Tamaño del icono */
-    color: #000000; /* Color del icono (puedes cambiar el color según prefieras) */
+    content: '\25B6'; 
+    font-size: 50px; 
+    color: #000000; 
+}
+
+#overlay {                                                                              /*Arreglar el centrado*/
+    position:absolute;
+    top: 0;
+    left: 0;
+    width: 97%;
+    height: 97%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1;                                         /* La capa detrás del botón */
 }
