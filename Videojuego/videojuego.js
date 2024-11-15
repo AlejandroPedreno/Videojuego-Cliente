@@ -6,9 +6,12 @@ window.onload = function(){
     const tronco = new Image();
     fondo.src = "Assets/Images/Fondo_prueba.avif";
     tronco.src = "Assets/Images/Tronco.png";
-    let troncos = [];                                               //Inicializo array de troncos
+    const troncos = [];                                               //Inicializo array de troncos
     let vidas = 3;
     let puntuación = 0;
+    let valorClick = 0;                                             //Valor según el tiempo que se mantenga pulsado el click izquierdo 
+    let miCastor;
+    const TOPEDERECHA = 600;
 
     pantallaOpacidad = document.getElementById("overlay");
     botonIniciar = document.getElementById("Iniciarpartida");
@@ -41,14 +44,50 @@ window.onload = function(){
 
     function dibujarVidas(){
         ctx.font = "18px Arial";
+        ctx.fillStyle = "lightblue";
+        ctx.fillRect(499, 2, 85, 25);
         for(let i = 0; i < vidas; i++){
             ctx.fillText("❤️", 500 + i*30, 20);
+
         }
-        ctx.fillStyle = "#000000";
     }
 
     if(vidas == 0){
         finPartida();
     }
-    dibujarPuntuación();
+
+    function Castor (x_, y_) {
+	
+        this.x = x_;
+        this.y = y_;
+        this.animacionCastor = [[0,0],[32,0]];
+        this.velocidad = 1.4;
+        this.tamañoX   = 30;
+        this.tamañoY   = 30;	  
+      
+      }
+
+    Castor.prototype.generaPosicionDerecha = function() {
+
+		this.x = this.x + this.velocidad;
+		
+		if (this.x > TOPEDERECHA) {
+
+			this.x = TOPEDERECHA;   	
+		}		
+
+	}
+	
+
+	Castor.prototype.generaPosicionIzquierda = function() {
+		
+		this.x = this.x - this.velocidad;
+
+		if (this.x < 0) {
+
+			this.x = 0;	   
+		}
+
+	}
 }
+
