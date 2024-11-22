@@ -152,11 +152,8 @@ function dibujarLinea() {
 
   //OTRAS FUNCIONES
   function verificarCruce() {
-      const plataformaSiguiente = troncos[1];
-      const extremoLinea = linea.x + linea.height * Math.cos(linea.angle);
-
-      if (extremoLinea > plataformaSiguiente.x && extremoLinea < plataformaSiguiente.x + plataformaSiguiente.width) {
-          linea.height = plataformaSiguiente.x - linea.x;
+    const plataformaSiguiente = troncos[1];
+      if (colisionTroncoPlataforma) {
           permitirPasoCastor();
       } else {
           vidas--;
@@ -174,6 +171,7 @@ function dibujarLinea() {
 
   function permitirPasoCastor() {
       castor.cruzando = true;
+      moverCastor();
   }
 
   function crearPlataformas() {
@@ -183,8 +181,6 @@ function dibujarLinea() {
         troncos.push({ x: xPos, y: 600, width: ancho, height: 200 }); 
     }
 }
-
-
 
   //EVENTOS
   canvas.addEventListener("mousedown", () => {
@@ -200,8 +196,26 @@ function dibujarLinea() {
           linea.angle = Math.PI / 2;                // Rotar 90°
           setTimeout(() => {
               verificarCruce();
-              linea.cayendo = false;
           }, 500);
       }
   });
+
+  //COLISIONES
+  function colisionTroncoPlataforma(tronco, plataforma) {
+    // Coordenadas del píxel superior derecho del objeto
+    const troncoDerecha = tronco.x + tronco.width;
+
+
+    // Coordenadas de la plataforma
+    const plataformaIzquierda = plataforma.x;
+    const plataformaDerecha = plataforma.x + plataforma.width;
+
+
+    // Comprobar si el píxel superior derecho del objeto toca la parte superior de la plataforma
+    if (troncoDerecha >= plataformaIzquierda && troncoDerecha <= plataformaDerecha) {
+        return true;
+    }
+    return false;
+}
+
 };
