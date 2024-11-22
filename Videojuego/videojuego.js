@@ -131,24 +131,38 @@ function dibujarLinea() {
   }
 
   //MOVIMIENTO
-  function moverCastor() {
-      if (castor.cruzando) {
-          castor.x += 5;
-          if (castor.x >= troncos[1].x + troncos[1].width / 2 - castor.width / 2) {
-              castor.cruzando = false;
-              moverPlataformas();
-          }
-      }
-  }
+function moverCastor() {
+    if (castor.cruzando) {
+        const distanciaRecorrida = 5;
+        castor.x += distanciaRecorrida;
+        if (castor.x >= troncos[1].x + troncos[1].width / 2 - castor.width / 2) {
+            castor.cruzando = false;
+            moverPlataformas(distanciaRecorrida);
+        }
+    }
+}
 
-  function moverPlataformas() {
-      troncos.shift();
-      let ancho = Math.random() * 100 + 50;
-      let xPos = troncos[troncos.length - 1].x + troncos[troncos.length - 1].width + Math.random() * 100 + 50;
-      troncos.push({ x: xPos, y: 600, width: ancho });
-      castor.x = troncos[0].x + troncos[0].width / 2 - castor.width / 2;
-      reiniciarLinea();
-  }
+function moverPlataformas(distanciaRecorrida) {
+    // Mover todos los troncos hacia la izquierda por la distancia recorrida
+    troncos.forEach(tronco => {
+        tronco.x -= distanciaRecorrida;
+    });
+
+
+    // Eliminar el primer tronco del array
+    troncos.shift();
+
+    // Generar un nuevo tronco al final del array
+    let ancho = Math.random() * 100 + 50;
+    let xPos = troncos[troncos.length - 1].x + troncos[troncos.length - 1].width + Math.random() * 100 + 50;
+    troncos.push({ x: xPos, y: 600, width: ancho, height: 200 });
+
+    // Reposicionar el castor en el centro del primer tronco
+    castor.x = troncos[0].x + troncos[0].width / 2 - castor.width / 2;
+
+    // Reiniciar la línea
+    reiniciarLinea();
+}
 
   //OTRAS FUNCIONES
   function verificarCruce() {
@@ -171,6 +185,7 @@ function dibujarLinea() {
 
   function permitirPasoCastor() {
       castor.cruzando = true;
+      puntuación++;
       moverCastor();
   }
 
@@ -201,10 +216,9 @@ function dibujarLinea() {
   });
 
   //COLISIONES
-  function colisionTroncoPlataforma(tronco, plataforma) {
+  function colisionTroncoPlataforma() {
     // Coordenadas del píxel superior derecho del objeto
-    const troncoDerecha = tronco.x + tronco.width;
-
+    const troncoDerecha = linea.x + linea.width;
 
     // Coordenadas de la plataforma
     const plataformaIzquierda = plataforma.x;
