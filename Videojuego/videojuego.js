@@ -152,9 +152,9 @@ function moverPlataformas(distanciaRecorrida) {
     });
 
 
-    // Eliminar el primer tronco del array
     troncos.shift();
 
+    console.log(canvas.width);
     // Generar un nuevo tronco al final del array
     let ancho = Math.random() * 100 + 50;
     let xPos = troncos[troncos.length - 1].x + troncos[troncos.length - 1].width + Math.random() * 100 + 50;
@@ -197,11 +197,17 @@ function moverPlataformas(distanciaRecorrida) {
 }
 
 
-  function crearPlataformas() {
-    for (let i = 0; i < 5; i++) {
-        let ancho = Math.random() * 100 + 50;
-        let xPos = i === 0 ? 50 : troncos[troncos.length - 1].x + troncos[troncos.length - 1].width + Math.random() * 100 + 50;
-        troncos.push({ x: xPos, y: 600, width: ancho, height: 200 }); 
+function crearPlataformas() {
+    for (let i = 0; i < 10; i++) {
+        let ancho = Math.random() * 100 + 50; // Anchura aleatoria
+        let distanciaMinima = 120; // Distancia mínima entre plataformas
+        let distanciaMaxima = 200; // Distancia máxima entre plataformas
+        let xPos = 
+            i === 0 
+            ? 50 // Primera plataforma siempre cerca
+            : troncos[troncos.length - 1].x + troncos[troncos.length - 1].width + Math.random() * (distanciaMaxima - distanciaMinima) + distanciaMinima;
+
+        troncos.push({ x: xPos, y: 600, width: ancho, height: 200 });
     }
 }
 
