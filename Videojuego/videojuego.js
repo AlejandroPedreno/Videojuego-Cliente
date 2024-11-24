@@ -112,9 +112,12 @@ function dibujarLinea() {
         linea.x = (primerTronco.x + primerTronco.width / 2)+10;
         linea.y = primerTronco.y + 4;
 
-    ctx.save();
+    ctx.save();        
     ctx.translate(linea.x, linea.y);
-    if (linea.cayendo) ctx.rotate(linea.angle);
+    if (linea.cayendo) {
+        ctx.rotate(linea.angle);
+
+    }
 
     ctx.drawImage(
         tronco,
@@ -184,10 +187,15 @@ function moverPlataformas(distanciaRecorrida) {
   }
 
   function permitirPasoCastor() {
-      castor.cruzando = true;
-      puntuación++;
-      moverCastor();
-  }
+    castor.cruzando = true;
+    puntuación++;
+
+    // Espera a que termine de cruzar antes de mover el escenario
+    setTimeout(() => {
+        moverEscenario();
+    }, 500); // Ajusta el tiempo según la duración del cruce
+}
+
 
   function crearPlataformas() {
     for (let i = 0; i < 5; i++) {
@@ -196,6 +204,30 @@ function moverPlataformas(distanciaRecorrida) {
         troncos.push({ x: xPos, y: 600, width: ancho, height: 200 }); 
     }
 }
+
+function moverEscenario() {
+    const velocidad = 5; 
+    const distancia = castor.x - 100;
+    const intervalo = setInterval(() => {
+
+        troncos.forEach(tronco => {
+            tronco.x -= velocidad;
+        });
+
+        // Mueve también la línea
+        linea.x -= velocidad;
+
+        // Actualiza la posición del castor para simular desplazamiento del entorno
+        castor.x -= velocidad;
+
+        // Si el castor llega a su posición inicial, detén el desplazamiento
+        if (castor.x <= 100) {
+            castor.x = 100; // Asegura que esté exactamente en la posición inicial
+            clearInterval(intervalo); // Detiene la animación
+        }
+    }, 16); // Aproximadamente 60 fps
+}
+
 
   //EVENTOS
   canvas.addEventListener("mousedown", () => {
@@ -209,6 +241,7 @@ function moverPlataformas(distanciaRecorrida) {
           linea.creciendo = false;
           linea.cayendo = true;
           linea.angle = Math.PI / 2;                // Rotar 90°
+
           setTimeout(() => {
               verificarCruce();
           }, 500);
@@ -217,19 +250,17 @@ function moverPlataformas(distanciaRecorrida) {
 
   //COLISIONES
   function colisionTroncoPlataforma() {
-    // Coordenadas del píxel superior derecho del objeto
-    const troncoDerecha = linea.x + linea.width;
+    const troncoSuperior = linea.y - linea.height;
+    const troncoDerecha = linea.x;
 
-    // Coordenadas de la plataforma
+    const plataforma = troncos[1]; // Siguiente plataforma
     const plataformaIzquierda = plataforma.x;
     const plataformaDerecha = plataforma.x + plataforma.width;
 
-
-    // Comprobar si el píxel superior derecho del objeto toca la parte superior de la plataforma
-    if (troncoDerecha >= plataformaIzquierda && troncoDerecha <= plataformaDerecha) {
-        return true;
-    }
-    return false;
+    return (troncoSuperior >= plataforma.y && 
+            troncoDerecha >= plataformaIzquierda && 
+            troncoDerecha <= plataformaDerecha);
 }
+
 
 };
