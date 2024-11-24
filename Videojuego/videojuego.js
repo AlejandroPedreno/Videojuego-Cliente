@@ -209,7 +209,12 @@ function crearPlataformas() {
 
         troncos.push({ x: xPos, y: 600, width: ancho, height: 200 });
     }
+
+    // Castor sobre la primera plataforma
+    castor.x = troncos[0].x + troncos[0].width / 2 - castor.width / 2; // Centrado sobre la primera plataforma
+    castor.y = troncos[0].y - castor.height; // Justo encima de la plataforma
 }
+
 
 function moverEscenario() {
     const velocidad = 5; 
