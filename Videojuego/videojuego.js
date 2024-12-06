@@ -290,17 +290,17 @@ window.onload = function () {
     function dibujarConstruyendo() {
         iniciarAnimaciónConstruyendo();
         if (posicion == 0) {
-            castor.width = 45;
-            castor.height = 40;
+            castor.width = 44;
+            castor.height = 38;
         } else if (posicion == 1) {
-            castor.width = 45;
-            castor.height = 40;
+            castor.width = 47;
+            castor.height = 33;
         } else if (posicion == 2) {
-            castor.width = 45;
-            castor.height = 40;
+            castor.width = 50;
+            castor.height = 29;
         } else if (posicion == 3) {
-            castor.width = 45;
-            castor.height = 40;
+            castor.width = 47;
+            castor.height = 33;
         }
         if(posicion <= 3){
         ctx.drawImage(castor.imagen,
