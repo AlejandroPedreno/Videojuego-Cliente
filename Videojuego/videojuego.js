@@ -20,7 +20,10 @@ window.onload = function () {
     let y = 570;
     let posicion = 0;
     let castor;
-
+    let intervaloEstático = false;
+    let intervaloCaminando = false;
+    let idIntervaloEstático;
+    let idIntervaloCaminando;
 
     // Parámetros del tronco generado por el jugador
     let linea = { x: 0, y: 600, height: 0, angle: 0, creciendo: false, cayendo: false };
@@ -35,9 +38,8 @@ window.onload = function () {
         this.construyendo = false;  // Indica si el castor está construyendo la línea
         this.animacionCastor = [
             [3, 14], [52, 14], [105, 14],     //Posicion normal
-            [0, 65], [32, 65],
-            [0, 95], [32, 95],
-            [0, 32], [32, 32]];
+            [3, 73], [55, 75], [110, 71], [159, 70], [206, 73], [257, 75], [309, 71], [362, 70]   //Posicion caminando
+        ];
     }
 
     tronco.width = 30;
@@ -69,13 +71,14 @@ window.onload = function () {
         dibujarFondo();
         dibujarPlataformas();
         dibujarLinea();
-        /*    if(castor.cruzando == true){
-            
-            }else if(castor.construyendo == true){
-                
-            }else{*/
+        if(castor.cruzando == true && linea.creciendo == false){
+        dibujarCaminando();
+        }
+
+        if(castor.cruzando == false && linea.creciendo == false){
         dibujarCastor();
-        //       }
+            }
+
         moverCastor();
         dibujarPuntuación();
         dibujarVidas();
@@ -152,6 +155,7 @@ window.onload = function () {
     }
 
     function dibujarCastor() {
+        iniciarAnimaciónEstática();
         ctx.drawImage(castor.imagen,
             castor.animacionCastor[posicion][0],
             castor.animacionCastor[posicion][1],
@@ -164,7 +168,7 @@ window.onload = function () {
     }
 
     function animaciónEstática() {
-        posicion = (posicion + 1) % 3;        posicion = (posicion + 1) % 3;
+        posicion = (posicion + 1) % 3;  
         if (posicion == 0) {
         castor.width = 46;
         castor.height = 40;
@@ -176,12 +180,42 @@ window.onload = function () {
         castor.height = 39;
         }
     }
+    function iniciarAnimaciónEstática() {
+        if (!intervaloEstático) {
+            if (idIntervaloCaminando) {
+                clearInterval(idIntervaloCaminando);
+            }
+            intervaloEstático = true;
+            intervaloCaminando = false;
+            idIntervaloEstático = setInterval(animaciónEstática, 1000 / 6);
+        }
+    }
+    function iniciarAnimaciónCaminando() {
+        if (!intervaloCaminando) {
+            if (idIntervaloEstático) {
+                clearInterval(idIntervaloEstático);
+            }
+            intervaloCaminando = true;
+            intervaloEstático = false;
+            idIntervaloCaminando = setInterval(animacionCaminando, 1000 / 24);
+        }
+    }
 
-        id = setInterval(animaciónEstática, 1000 / 6);
-
+    function animacionCaminando() {
+        posicion = (posicion + 1) % 8;
+    }    
+    //id = setInterval(animacionCaminando, 1000 / 6);
         function dibujarCaminando() {
-
-
+            iniciarAnimaciónCaminando();
+            ctx.drawImage(castor.imagen,
+                castor.animacionCastor[posicion+3][0],
+                castor.animacionCastor[posicion+3][1],
+                castor.width,
+                castor.height,
+                castor.x,
+                castor.y+3,
+                castor.width,
+                castor.height);
         }
 
         function dibujarConstruyendo() {
