@@ -36,9 +36,14 @@ window.onload = function () {
         this.height = 40;
         this.cruzando = false;  // Indica si el castor está cruzando la línea
         this.construyendo = false;  // Indica si el castor está construyendo la línea
-        this.animacionCastor = [
+        this.animacionCastorNormal = [
             [3, 14], [52, 14], [105, 14],     //Posicion normal
-            [3, 73], [55, 75], [110, 71], [159, 70], [206, 73], [257, 75], [309, 71], [362, 70]   //Posicion caminando
+            [3, 73], [55, 75], [110, 71], [159, 70], [206, 73], [257, 75], [309, 71], [362, 70],   //Posicion caminando
+            [153, 16], [3, 200], [53, 204], [3, 200]
+        ];
+        this.animacionCastorCaminando = [
+            [3, 73], [55, 75], [110, 71], [159, 70], [206, 73], [257, 75], [309, 71], [362, 70],   //Posicion caminando
+            [153, 16], [3, 200], [53, 204], [3, 200]
         ];
     }
 
@@ -71,13 +76,13 @@ window.onload = function () {
         dibujarFondo();
         dibujarPlataformas();
         dibujarLinea();
-        if(castor.cruzando == true && linea.creciendo == false){
-        dibujarCaminando();
+        if (castor.cruzando == true && linea.creciendo == false) {
+            dibujarCaminando();
         }
 
-        if(castor.cruzando == false && linea.creciendo == false){
-        dibujarCastor();
-            }
+        if (castor.cruzando == false && linea.creciendo == false) {
+            dibujarCastor();
+        }
 
         moverCastor();
         dibujarPuntuación();
@@ -156,29 +161,32 @@ window.onload = function () {
 
     function dibujarCastor() {
         iniciarAnimaciónEstática();
+
+        if (posicion == 0) {
+            castor.width = 46;
+            castor.height = 40;
+        } else if (posicion == 1) {
+            castor.width = 49;
+            castor.height = 40;
+        } else if (posicion == 2) {
+            castor.width = 45;
+            castor.height = 39;
+        }
+
         ctx.drawImage(castor.imagen,
-            castor.animacionCastor[posicion][0],
-            castor.animacionCastor[posicion][1],
+            castor.animacionCastorNormal[posicion][0],
+            castor.animacionCastorNormal[posicion][1],
             castor.width,
             castor.height,
             castor.x,
-            castor.y+3,
+            castor.y + 3,
             castor.width,
             castor.height);
     }
 
     function animaciónEstática() {
-        posicion = (posicion + 1) % 3;  
-        if (posicion == 0) {
-        castor.width = 46;
-        castor.height = 40;
-        }else if (posicion == 1) {
-        castor.width = 49;
-        castor.height = 40;
-        }else if (posicion == 2) {
-        castor.width = 45;
-        castor.height = 39;
-        }
+        posicion = (posicion + 1) % 3;
+
     }
     function iniciarAnimaciónEstática() {
         if (!intervaloEstático) {
@@ -203,172 +211,200 @@ window.onload = function () {
 
     function animacionCaminando() {
         posicion = (posicion + 1) % 8;
-    }    
+    }
     //id = setInterval(animacionCaminando, 1000 / 6);
-        function dibujarCaminando() {
-            iniciarAnimaciónCaminando();
-            ctx.drawImage(castor.imagen,
-                castor.animacionCastor[posicion+3][0],
-                castor.animacionCastor[posicion+3][1],
-                castor.width,
-                castor.height,
-                castor.x,
-                castor.y+3,
-                castor.width,
-                castor.height);
+    function dibujarCaminando() {
+        
+        iniciarAnimaciónCaminando();
+
+        if (posicion == 0) {
+            castor.width = 49;
+            castor.height = 40;
+        } else if (posicion == 1) {
+            castor.width = 51;
+            castor.height = 38;
+        } else if (posicion == 2) {
+            castor.width = 45;
+            castor.height = 42;
+        }        if (posicion == 3) {
+            castor.width = 43;
+            castor.height = 43;
+        } else if (posicion == 4) {
+            castor.width = 47;
+            castor.height = 40;
+        } else if (posicion == 5) {
+            castor.width = 49;
+            castor.height = 38;
+        }        if (posicion == 6) {
+            castor.width = 49;
+            castor.height = 42;
+        } else if (posicion == 7) {
+            castor.width = 47;
+            castor.height = 43;
         }
 
-        function dibujarConstruyendo() {
+        ctx.drawImage(castor.imagen,
+            castor.animacionCastorCaminando[posicion][0],
+            castor.animacionCastorCaminando[posicion][1],
+            castor.width,
+            castor.height,
+            castor.x,
+            castor.y + 3,
+            castor.width,
+            castor.height);
+    }
 
-        }
+    function dibujarConstruyendo() {
 
-        //MOVIMIENTO
-        function moverCastor() {
-            if (castor.cruzando) {
-                const distanciaRecorrida = 5;
-                castor.x += distanciaRecorrida;
-                if (castor.x >= troncos[1].x + troncos[1].width / 2 - castor.width / 2) {
-                    castor.cruzando = false;
-                    moverPlataformas(distanciaRecorrida);
-                }
+    }
+
+    //MOVIMIENTO
+    function moverCastor() {
+        if (castor.cruzando) {
+            const distanciaRecorrida = 5;
+            castor.x += distanciaRecorrida;
+            if (castor.x >= troncos[1].x + troncos[1].width / 2 - castor.width / 2) {
+                castor.cruzando = false;
+                moverPlataformas(distanciaRecorrida);
             }
         }
+    }
 
-        function moverPlataformas(distanciaRecorrida) {
-            // Mover todos los troncos hacia la izquierda por la distancia recorrida
+    function moverPlataformas(distanciaRecorrida) {
+        // Mover todos los troncos hacia la izquierda por la distancia recorrida
+        troncos.forEach(tronco => {
+            tronco.x -= distanciaRecorrida;
+        });
+
+
+        troncos.shift();
+
+        console.log(canvas.width);
+        // Generar un nuevo tronco al final del array
+        let ancho = Math.random() * 100 + 50;
+        let xPos = troncos[troncos.length - 1].x + troncos[troncos.length - 1].width + Math.random() * 100 + 50;
+        troncos.push({ x: xPos, y: 600, width: ancho, height: 200 });
+
+        // Reposicionar el castor en el centro del primer tronco
+        castor.x = troncos[0].x + troncos[0].width / 2 - castor.width / 2;
+
+        // Reiniciar la línea
+        reiniciarLinea();
+    }
+
+    //OTRAS FUNCIONES
+    function verificarCruce() {
+        const plataformaSiguiente = troncos[1];
+        if (colisionTroncoPlataforma) {
+            permitirPasoCastor();
+        } else {
+            vidas--;
+            if (vidas <= 0) finPartida();
+            else reiniciarLinea();
+        }
+    }
+
+    function reiniciarLinea() {
+        linea.height = 0;
+        linea.angle = 0;
+        linea.creciendo = false;
+        linea.cayendo = false;
+    }
+
+    function permitirPasoCastor() {
+        castor.cruzando = true;
+        puntuación++;
+
+        // Espera a que termine de cruzar antes de mover el escenario
+        setTimeout(() => {
+            moverEscenario();
+        }, 500); // Ajusta el tiempo según la duración del cruce
+    }
+
+
+    function crearPlataformas() {
+        for (let i = 0; i < 10; i++) {
+            let ancho = Math.random() * 100 + 50; // Anchura aleatoria
+            let distanciaMinima = 120; // Distancia mínima entre plataformas
+            let distanciaMaxima = 200; // Distancia máxima entre plataformas
+            let xPos =
+                i === 0
+                    ? 50 // Primera plataforma siempre cerca
+                    : troncos[troncos.length - 1].x + troncos[troncos.length - 1].width + Math.random() * (distanciaMaxima - distanciaMinima) + distanciaMinima;
+
+            troncos.push({ x: xPos, y: 600, width: ancho, height: 200 });
+        }
+
+        // Castor sobre la primera plataforma
+        castor.x = troncos[0].x + troncos[0].width / 2 - castor.width / 2; // Centrado sobre la primera plataforma
+        castor.y = troncos[0].y - castor.height; // Justo encima de la plataforma
+    }
+
+
+    function moverEscenario() {
+        const velocidad = 5;
+        const distancia = castor.x - 100;
+        const intervalo = setInterval(() => {
+
             troncos.forEach(tronco => {
-                tronco.x -= distanciaRecorrida;
+                tronco.x -= velocidad;
             });
 
+            // Mueve también la línea
+            linea.x -= velocidad;
 
-            troncos.shift();
+            // Actualiza la posición del castor para simular desplazamiento del entorno
+            castor.x -= velocidad;
 
-            console.log(canvas.width);
-            // Generar un nuevo tronco al final del array
-            let ancho = Math.random() * 100 + 50;
-            let xPos = troncos[troncos.length - 1].x + troncos[troncos.length - 1].width + Math.random() * 100 + 50;
-            troncos.push({ x: xPos, y: 600, width: ancho, height: 200 });
-
-            // Reposicionar el castor en el centro del primer tronco
-            castor.x = troncos[0].x + troncos[0].width / 2 - castor.width / 2;
-
-            // Reiniciar la línea
-            reiniciarLinea();
-        }
-
-        //OTRAS FUNCIONES
-        function verificarCruce() {
-            const plataformaSiguiente = troncos[1];
-            if (colisionTroncoPlataforma) {
-                permitirPasoCastor();
-            } else {
-                vidas--;
-                if (vidas <= 0) finPartida();
-                else reiniciarLinea();
+            // Si el castor llega a su posición inicial, detén el desplazamiento
+            if (castor.x <= 100) {
+                castor.x = 100; // Asegura que esté exactamente en la posición inicial
+                clearInterval(intervalo); // Detiene la animación
             }
-        }
+        }, 16); // Aproximadamente 60 fps
+    }
 
-        function reiniciarLinea() {
-            linea.height = 0;
-            linea.angle = 0;
+
+    //EVENTOS
+    canvas.addEventListener("mousedown", () => {
+        if (juegoIniciado && !linea.cayendo) {
+            linea.creciendo = true;
+        }
+    });
+
+    canvas.addEventListener("mouseup", () => {
+        if (juegoIniciado && linea.creciendo) {
             linea.creciendo = false;
-            linea.cayendo = false;
-        }
+            linea.cayendo = true;
+            linea.angle = Math.PI / 2;                // Rotar 90°
 
-        function permitirPasoCastor() {
-            castor.cruzando = true;
-            puntuación++;
-
-            // Espera a que termine de cruzar antes de mover el escenario
             setTimeout(() => {
-                moverEscenario();
-            }, 500); // Ajusta el tiempo según la duración del cruce
+                verificarCruce();
+            }, 500);
         }
+    });
 
+    //COLISIONES
+    function colisionTroncoPlataforma() {
+        const troncoSuperior = linea.y - linea.height;
+        const troncoDerecha = linea.x;
 
-        function crearPlataformas() {
-            for (let i = 0; i < 10; i++) {
-                let ancho = Math.random() * 100 + 50; // Anchura aleatoria
-                let distanciaMinima = 120; // Distancia mínima entre plataformas
-                let distanciaMaxima = 200; // Distancia máxima entre plataformas
-                let xPos =
-                    i === 0
-                        ? 50 // Primera plataforma siempre cerca
-                        : troncos[troncos.length - 1].x + troncos[troncos.length - 1].width + Math.random() * (distanciaMaxima - distanciaMinima) + distanciaMinima;
+        const plataforma = troncos[1]; // Siguiente plataforma
+        const plataformaIzquierda = plataforma.x;
+        const plataformaDerecha = plataforma.x + plataforma.width;
 
-                troncos.push({ x: xPos, y: 600, width: ancho, height: 200 });
-            }
-
-            // Castor sobre la primera plataforma
-            castor.x = troncos[0].x + troncos[0].width / 2 - castor.width / 2; // Centrado sobre la primera plataforma
-            castor.y = troncos[0].y - castor.height; // Justo encima de la plataforma
-        }
-
-
-        function moverEscenario() {
-            const velocidad = 5;
-            const distancia = castor.x - 100;
-            const intervalo = setInterval(() => {
-
-                troncos.forEach(tronco => {
-                    tronco.x -= velocidad;
-                });
-
-                // Mueve también la línea
-                linea.x -= velocidad;
-
-                // Actualiza la posición del castor para simular desplazamiento del entorno
-                castor.x -= velocidad;
-
-                // Si el castor llega a su posición inicial, detén el desplazamiento
-                if (castor.x <= 100) {
-                    castor.x = 100; // Asegura que esté exactamente en la posición inicial
-                    clearInterval(intervalo); // Detiene la animación
-                }
-            }, 16); // Aproximadamente 60 fps
-        }
-
-
-        //EVENTOS
-        canvas.addEventListener("mousedown", () => {
-            if (juegoIniciado && !linea.cayendo) {
-                linea.creciendo = true;
-            }
-        });
-
-        canvas.addEventListener("mouseup", () => {
-            if (juegoIniciado && linea.creciendo) {
-                linea.creciendo = false;
-                linea.cayendo = true;
-                linea.angle = Math.PI / 2;                // Rotar 90°
-
-                setTimeout(() => {
-                    verificarCruce();
-                }, 500);
-            }
-        });
-
-        //COLISIONES
-        function colisionTroncoPlataforma() {
-            const troncoSuperior = linea.y - linea.height;
-            const troncoDerecha = linea.x;
-
-            const plataforma = troncos[1]; // Siguiente plataforma
-            const plataformaIzquierda = plataforma.x;
-            const plataformaDerecha = plataforma.x + plataforma.width;
-
-            return (troncoSuperior >= plataforma.y &&
-                troncoDerecha >= plataformaIzquierda &&
-                troncoDerecha <= plataformaDerecha);
-        }
+        return (troncoSuperior >= plataforma.y &&
+            troncoDerecha >= plataformaIzquierda &&
+            troncoDerecha <= plataformaDerecha);
+    }
 
 
 
 
-        imagen = new Image();
-        imagen.src = "Assets/Images/sprite-castor.png";
-        Castor.prototype.imagen = imagen;
+    imagen = new Image();
+    imagen.src = "Assets/Images/sprite-castor.png";
+    Castor.prototype.imagen = imagen;
 
-        castor = new Castor(x, y);
+    castor = new Castor(x, y);
 
-    };
+};
