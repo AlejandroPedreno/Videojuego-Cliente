@@ -111,7 +111,7 @@ window.onload = function () {
         moverCastor();
         dibujarPuntuación();
         dibujarVidas();
-
+        dibujarPuntoNegro();
         requestAnimationFrame(gameLoop);
     }
 
@@ -148,7 +148,6 @@ window.onload = function () {
     function dibujarPlataformas() {
 
         troncos.forEach((plataforma) => {
-
             ctx.drawImage(
                 tronco,
                 plataforma.x,
@@ -399,6 +398,7 @@ window.onload = function () {
     function verificarCruce() {
         const plataformaSiguiente = troncos[1];
         if (colisionTroncoPlataforma) {
+            console.log(colisionTroncoPlataforma());
             permitirPasoCastor();
         } else {
             vidas--;
@@ -490,19 +490,68 @@ canvas.addEventListener("mouseup", () => {
 
     //COLISIONES
     function colisionTroncoPlataforma() {
-        console.log(linea.y);
+      /*  console.log(linea.y);
         console.log(linea.height);
-        const troncoSuperior = linea.y - linea.height;
-        const troncoDerecha = linea.x;
-
-        const plataforma = troncos[1]; // Siguiente plataforma
-        const plataformaIzquierda = plataforma.x;
-        const plataformaDerecha = plataforma.x + plataforma.width;
-
-        return (troncoSuperior >= plataforma.y &&
-            troncoDerecha >= plataformaIzquierda &&
-            troncoDerecha <= plataformaDerecha);
+        console.log(linea.width);
+        console.log(troncos[1].height);
+        console.log(troncos[1].width);*/
+        const troncoSuperior = linea.height;
+        const plataformaInicial = linea.x + linea.height * Math.cos(linea.angle) ;
+        console.log(troncoSuperior);
+        const plataformaIzquierda = troncos[1].x + (0.2767*troncos[1].width);           //He sacado el 27,67% en GIMP, dejando fuera la parte del tronco no visible
+        const plataformaDerecha = troncos[1].x+(0.8*troncos[1].width);                  //He sacado el 80% en GIMP, dejando fuera la parte del tronco no visible
+        const plataformaArriba = troncos[1].y;
+        console.log(plataformaIzquierda);
+        console.log(plataformaInicial);
+        console.log(plataformaIzquierda-plataformaInicial);
+        if(troncoSuperior >= (plataformaIzquierda-plataformaInicial)){
+            return true;
+        }else{
+            return false;
+        }
+        
+            
     }
+
+    function dibujarPuntoNegro() {              //Puntos para tomar referencias
+        if (troncos.length > 1) {
+            const x = troncos[1].x+(0.2767*troncos[1].width);
+            const y = troncos[1].y;
+    
+            ctx.fillStyle = "black";
+            ctx.fillRect(x, y, 5, 5); 
+        }
+        if(troncos.length>1){
+            const x = troncos[1].x+(0.8*troncos[1].width);
+            const y = troncos[1].y; 
+    
+            ctx.fillStyle = "black";
+            ctx.fillRect(x, y, 5, 5); 
+        }
+        if(troncos.length>1){
+            const x = troncos[1].x+(0.2767*troncos[1].width); 
+            const y = troncos[1].y+30; 
+    
+            ctx.fillStyle = "black";
+            ctx.fillRect(x, y, 5, 5);
+        }
+        if(troncos.length>1){
+            const x = troncos[1].x+(0.8*troncos[1].width); 
+            const y = troncos[1].y-30; 
+    
+            ctx.fillStyle = "black";
+            ctx.fillRect(x, y, 5, 5); 
+        }
+        if(troncos.length>1){
+            const x = linea.x + linea.height * Math.cos(linea.angle)+1.5; 
+            const y = troncos[1].y; 
+    
+            ctx.fillStyle = "black";
+            ctx.fillRect(x, y, 5, 5); 
+        }
+    }
+    
+    
 
     function colisionTroncoTecho() {
         if (linea.y - linea.height <= 0) {
