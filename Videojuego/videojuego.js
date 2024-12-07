@@ -26,6 +26,7 @@ window.onload = function () {
     let idIntervaloEstático;
     let idIntervaloCaminando;
     let idIntervaloConstruyendo;
+    let velocidadAngular = 0;
 
     // Parámetros del tronco generado por el jugador
     let linea = { x: 0, y: 600, height: 0, angle: 0, creciendo: false, cayendo: false };
@@ -156,6 +157,16 @@ window.onload = function () {
                 plataforma.height
             );
         });
+    }
+
+    function animarCaida() {
+        if (linea.angle < Math.PI / 2) { // Si aún no alcanzó 90°
+            linea.angle += velocidadAngular; // Incrementa el ángulo
+            requestAnimationFrame(animarCaida); // Continúa la animación
+        } else {
+            linea.angle = Math.PI / 2; // Asegura que quede exactamente en 90°
+            verificarCruce(); // Verifica si el cruce fue exitoso
+        }
     }
 
     function dibujarLinea() {
@@ -461,18 +472,17 @@ window.onload = function () {
         }
     });
 
-    canvas.addEventListener("mouseup", () => {
-        if (juegoIniciado && linea.creciendo) {
-            detenerSonido(sonidoConstruyendo);
-            linea.creciendo = false;
-            linea.cayendo = true;
-            linea.angle = Math.PI / 2;                // Rotar 90°
+canvas.addEventListener("mouseup", () => {
+    if (juegoIniciado && linea.creciendo) {
+        detenerSonido(sonidoConstruyendo);
+        linea.creciendo = false;
+        linea.cayendo = true;
+        velocidadAngular = Math.PI / 60; // Ajusta la velocidad de caída
 
-            setTimeout(() => {
-                verificarCruce();
-            }, 500);
-        }
-    });
+        // Inicia la animación de caída
+        requestAnimationFrame(animarCaida);
+    }
+});
 
     //COLISIONES
     function colisionTroncoPlataforma() {
@@ -495,13 +505,13 @@ window.onload = function () {
             linea.creciendo = false;
             linea.cayendo = true;
             linea.angle = Math.PI / 2; // Rotar 90°
-
+            
             setTimeout(() => {
                 verificarCruce();
             }, 500);
+
         }
     }
-
 
 
 
