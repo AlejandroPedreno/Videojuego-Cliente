@@ -72,14 +72,13 @@ window.onload = function () {
     };
 
     function iniciarSonido(sonido) {
-        sonido.currentTime = 0; // Reiniciar el sonido desde el principio
+        sonido.currentTime = 0;
         sonido.play();
     }
 
-    // Función para detener el sonido
     function detenerSonido(sonido) {
         sonido.pause();
-        sonido.currentTime = 0; // Reiniciar el sonido desde el principio
+        sonido.currentTime = 0;
     }
 
 
@@ -119,10 +118,29 @@ window.onload = function () {
         juegoIniciado = false;
         botonIniciar.style.visibility = "visible";
         pantallaOpacidad.style.visibility = "visible";
+    
         troncos.length = 0;
+    
         linea.height = 0;
+        linea.angle = 0;
+        linea.creciendo = false;
+        linea.cayendo = false;
+    
         vidas = 3;
+        puntuación = 0;
+    
+        castor.cruzando = false;
+        castor.x = 100;
+        castor.y = 570;
+    
+        clearInterval(idIntervaloEstático);
+        clearInterval(idIntervaloCaminando);
+        clearInterval(idIntervaloConstruyendo);
+        intervaloEstático = false;
+        intervaloCaminando = false;
+        intervaloConstruyendo = false;
     }
+    
 
     //DIBUJAR
     function dibujarFondo() {
@@ -395,8 +413,8 @@ window.onload = function () {
 
     //OTRAS FUNCIONES
     function verificarCruce() {
-        const plataformaSiguiente = troncos[1];
-        if (colisionTroncoPlataforma) {
+        let vericidad = colisionTroncoPlataforma();
+        if (vericidad==true) {
             console.log(colisionTroncoPlataforma());
             permitirPasoCastor();
         } else {
@@ -512,7 +530,7 @@ canvas.addEventListener("mouseup", () => {
             
     }
 
-    function dibujarPuntoNegro() {              //Puntos para tomar referencias
+/*    function dibujarPuntoNegro() {              //Puntos para tomar referencias
         if (troncos.length > 1) {
             const x = troncos[1].x+(0.2767*troncos[1].width);
             const y = troncos[1].y;
@@ -549,7 +567,7 @@ canvas.addEventListener("mouseup", () => {
             ctx.fillRect(x, y, 5, 5); 
         }
     }
-    
+    */
     
 
     function colisionTroncoTecho() {
