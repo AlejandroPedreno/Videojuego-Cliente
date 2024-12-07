@@ -56,10 +56,13 @@ window.onload = function () {
     const botonIniciar = document.getElementById("Iniciarpartida");
     const sonidoPasos = document.getElementById("Pasos");
     const sonidoFondo = document.getElementById("SonidoFondo");
+    const sonidoConstruyendo = document.getElementById("SonidoConstruyendo");
 
     sonidoPasos.playbackRate = 2;
     sonidoFondo.loop = true;
-    sonidoFondo.volume = 0.3;   
+    sonidoFondo.volume = 0.3;
+    sonidoConstruyendo.playbackRate = 0.65;
+    sonidoConstruyendo.volume = 0.5;
 
     botonIniciar.onclick = iniciarPartida;
 
@@ -71,7 +74,7 @@ window.onload = function () {
         sonido.currentTime = 0; // Reiniciar el sonido desde el principio
         sonido.play();
     }
-    
+
     // Función para detener el sonido
     function detenerSonido(sonido) {
         sonido.pause();
@@ -156,8 +159,9 @@ window.onload = function () {
     }
 
     function dibujarLinea() {
-        
+
         if (linea.creciendo) {
+
             colisionTroncoTecho();
             linea.height += 4;
         }
@@ -169,7 +173,7 @@ window.onload = function () {
         ctx.translate(linea.x, linea.y);
         if (linea.cayendo) {
             ctx.rotate(linea.angle);
-            
+
         }
 
         ctx.drawImage(
@@ -183,12 +187,12 @@ window.onload = function () {
     }
 
     function animacionEstática() {
-        posicion = (posicion + 1) % castor.animacionCastorNormal.length;    
+        posicion = (posicion + 1) % castor.animacionCastorNormal.length;
 
     }
 
     function animacionCaminando() {
-        posicion = (posicion + 1) % castor.animacionCastorCaminando.length; 
+        posicion = (posicion + 1) % castor.animacionCastorCaminando.length;
     }
 
     function animacionConstruyendo() {
@@ -241,7 +245,7 @@ window.onload = function () {
 
     function dibujarCastor() {
         iniciarAnimaciónEstática();
-        if(posicion > 2){
+        if (posicion > 2) {
             posicion = 0;
         }
 
@@ -296,16 +300,16 @@ window.onload = function () {
             castor.width = 47;
             castor.height = 43;
         }
-        if(posicion <= 7){
-        ctx.drawImage(castor.imagen,
-            castor.animacionCastorCaminando[posicion][0],
-            castor.animacionCastorCaminando[posicion][1],
-            castor.width,
-            castor.height,
-            castor.x,
-            castor.y + 3,
-            castor.width,
-            castor.height);
+        if (posicion <= 7) {
+            ctx.drawImage(castor.imagen,
+                castor.animacionCastorCaminando[posicion][0],
+                castor.animacionCastorCaminando[posicion][1],
+                castor.width,
+                castor.height,
+                castor.x,
+                castor.y + 3,
+                castor.width,
+                castor.height);
         }
     }
 
@@ -324,16 +328,16 @@ window.onload = function () {
             castor.width = 47;
             castor.height = 33;
         }
-        if(posicion <= 3){
-        ctx.drawImage(castor.imagen,
-            castor.animacionCastorConstruyendo[posicion][0],
-            castor.animacionCastorConstruyendo[posicion][1],
-            castor.width,
-            castor.height,
-            castor.x,
-            castor.y + 3,
-            castor.width,
-            castor.height);
+        if (posicion <= 3) {
+            ctx.drawImage(castor.imagen,
+                castor.animacionCastorConstruyendo[posicion][0],
+                castor.animacionCastorConstruyendo[posicion][1],
+                castor.width,
+                castor.height,
+                castor.x,
+                castor.y + 3,
+                castor.width,
+                castor.height);
         }
     }
 
@@ -343,7 +347,7 @@ window.onload = function () {
             if (sonidoPasos.paused) {
                 iniciarSonido(sonidoPasos);
             }
-    
+
             const distanciaRecorrida = 5;
             castor.x += distanciaRecorrida;
             if (castor.x >= troncos[1].x + troncos[1].width / 2 - castor.width / 2) {
@@ -452,12 +456,14 @@ window.onload = function () {
     //EVENTOS
     canvas.addEventListener("mousedown", () => {
         if (juegoIniciado && !linea.cayendo) {
+            iniciarSonido(sonidoConstruyendo);
             linea.creciendo = true;
         }
     });
 
     canvas.addEventListener("mouseup", () => {
         if (juegoIniciado && linea.creciendo) {
+            detenerSonido(sonidoConstruyendo);
             linea.creciendo = false;
             linea.cayendo = true;
             linea.angle = Math.PI / 2;                // Rotar 90°
@@ -489,7 +495,7 @@ window.onload = function () {
             linea.creciendo = false;
             linea.cayendo = true;
             linea.angle = Math.PI / 2; // Rotar 90°
-    
+
             setTimeout(() => {
                 verificarCruce();
             }, 500);
