@@ -158,6 +158,7 @@ window.onload = function () {
     function dibujarLinea() {
         
         if (linea.creciendo) {
+            colisionTroncoTecho();
             linea.height += 4;
         }
         const primerTronco = troncos[0];
@@ -481,6 +482,18 @@ window.onload = function () {
         return (troncoSuperior >= plataforma.y &&
             troncoDerecha >= plataformaIzquierda &&
             troncoDerecha <= plataformaDerecha);
+    }
+
+    function colisionTroncoTecho() {
+        if (linea.y - linea.height <= 0) {
+            linea.creciendo = false;
+            linea.cayendo = true;
+            linea.angle = Math.PI / 2; // Rotar 90°
+    
+            setTimeout(() => {
+                verificarCruce();
+            }, 500);
+        }
     }
 
 
