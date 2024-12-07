@@ -55,8 +55,11 @@ window.onload = function () {
     const pantallaOpacidad = document.getElementById("overlay");
     const botonIniciar = document.getElementById("Iniciarpartida");
     const sonidoPasos = document.getElementById("Pasos");
+    const sonidoFondo = document.getElementById("SonidoFondo");
 
     sonidoPasos.playbackRate = 2;
+    sonidoFondo.loop = true;
+    sonidoFondo.volume = 0.3;   
 
     botonIniciar.onclick = iniciarPartida;
 
@@ -78,6 +81,7 @@ window.onload = function () {
 
     //FUNCIONES
     function iniciarPartida() {
+        iniciarSonido(sonidoFondo);
         juegoIniciado = true;
         botonIniciar.style.visibility = "hidden";
         pantallaOpacidad.style.visibility = "hidden";
@@ -108,6 +112,7 @@ window.onload = function () {
     }
 
     function finPartida() {
+        detenerSonido(sonidoFondo);
         juegoIniciado = false;
         botonIniciar.style.visibility = "visible";
         pantallaOpacidad.style.visibility = "visible";
