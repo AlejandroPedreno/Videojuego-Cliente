@@ -148,19 +148,35 @@ window.onload = function () {
     }
 
     function dibujarPuntuación() {
-        ctx.font = "18px Arial";
-        ctx.fillStyle = "#000";
-        ctx.fillText("Puntuación: " + puntuación, 10, 20);
+
+
+        ctx.fillStyle = "lightgrey";
+        ctx.fillRect(15, 15, 154, 26);
+
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 2;         
+        ctx.strokeRect(15, 15, 154, 26);
+
+        ctx.font = "24px Arial";
+        ctx.fillStyle = "black";
+        ctx.fillText("Puntuación: " + puntuación, 18, 36);
+
     }
 
     function dibujarVidas() {
         ctx.font = "18px Arial";
-        ctx.fillStyle = "lightblue";
-        ctx.fillRect(499, 2, 85, 25);
+        ctx.fillStyle = "lightgrey";
+        ctx.fillRect(999, 15, 85, 25);
+
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 2;         
+        ctx.strokeRect(999, 15, 85, 25);
+
         for (let i = 0; i < vidas; i++) {
-            ctx.fillText("❤️", 500 + i * 30, 20);
+            ctx.fillText("❤️", 1000 + i * 30, 33);
         }
     }
+
 
     function dibujarPlataformas() {
 
