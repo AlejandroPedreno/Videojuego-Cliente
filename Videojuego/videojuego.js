@@ -111,7 +111,6 @@ window.onload = function () {
         moverCastor();
         dibujarPuntuación();
         dibujarVidas();
-        dibujarPuntoNegro();
         requestAnimationFrame(gameLoop);
     }
 
@@ -504,7 +503,7 @@ canvas.addEventListener("mouseup", () => {
         console.log(plataformaIzquierda);
         console.log(plataformaInicial);
         console.log(plataformaIzquierda-plataformaInicial);
-        if(troncoSuperior >= (plataformaIzquierda-plataformaInicial)){
+        if(troncoSuperior >= (plataformaIzquierda-plataformaInicial) && troncoSuperior <= (plataformaDerecha-plataformaInicial)){
             return true;
         }else{
             return false;
