@@ -160,14 +160,18 @@ window.onload = function () {
     }
 
     function animarCaida() {
-        if (linea.angle < Math.PI / 2) { // Si aún no alcanzó 90°
-            linea.angle += velocidadAngular; // Incrementa el ángulo
-            requestAnimationFrame(animarCaida); // Continúa la animación
+        const factorAceleracion = 1.05; 
+        if (linea.angle < Math.PI / 2) { 
+            velocidadAngular *= factorAceleracion; 
+            linea.angle += velocidadAngular; 
+            requestAnimationFrame(animarCaida); 
         } else {
-            linea.angle = Math.PI / 2; // Asegura que quede exactamente en 90°
-            verificarCruce(); // Verifica si el cruce fue exitoso
+            linea.angle = Math.PI / 2; 
+            verificarCruce(); 
         }
     }
+    
+    velocidadAngular += 0.01 * Math.pow(linea.angle, 2);
 
     function dibujarLinea() {
 
@@ -477,7 +481,7 @@ canvas.addEventListener("mouseup", () => {
         detenerSonido(sonidoConstruyendo);
         linea.creciendo = false;
         linea.cayendo = true;
-        velocidadAngular = Math.PI / 60; // Velocidad de caída
+        velocidadAngular = Math.PI / 160; // Velocidad de caída
 
         // Inicia la animación de caída
         requestAnimationFrame(animarCaida);
@@ -505,7 +509,7 @@ canvas.addEventListener("mouseup", () => {
             linea.creciendo = false;
             linea.cayendo = true;
     
-            velocidadAngular = Math.PI / 60; 
+            velocidadAngular = Math.PI / 160; 
             requestAnimationFrame(animarCaida);
         }
     }
