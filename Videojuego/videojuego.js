@@ -477,7 +477,7 @@ canvas.addEventListener("mouseup", () => {
         detenerSonido(sonidoConstruyendo);
         linea.creciendo = false;
         linea.cayendo = true;
-        velocidadAngular = Math.PI / 60; // Ajusta la velocidad de caída
+        velocidadAngular = Math.PI / 60; // Velocidad de caída
 
         // Inicia la animación de caída
         requestAnimationFrame(animarCaida);
@@ -504,15 +504,11 @@ canvas.addEventListener("mouseup", () => {
         if (linea.y - linea.height <= 0) {
             linea.creciendo = false;
             linea.cayendo = true;
-            linea.angle = Math.PI / 2; // Rotar 90°
-            
-            setTimeout(() => {
-                verificarCruce();
-            }, 500);
-
+    
+            velocidadAngular = Math.PI / 60; 
+            requestAnimationFrame(animarCaida);
         }
     }
-
 
 
     imagen = new Image();
