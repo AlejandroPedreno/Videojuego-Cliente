@@ -54,12 +54,27 @@ window.onload = function () {
     //REFERENCIAS A HTML
     const pantallaOpacidad = document.getElementById("overlay");
     const botonIniciar = document.getElementById("Iniciarpartida");
+    const sonidoPasos = document.getElementById("Pasos");
+
+    sonidoPasos.playbackRate = 2;
 
     botonIniciar.onclick = iniciarPartida;
 
     fondo.onload = function () {
         dibujarFondo();
     };
+
+    function iniciarSonido(sonido) {
+        sonido.currentTime = 0; // Reiniciar el sonido desde el principio
+        sonido.play();
+    }
+    
+    // Función para detener el sonido
+    function detenerSonido(sonido) {
+        sonido.pause();
+        sonido.currentTime = 0; // Reiniciar el sonido desde el principio
+    }
+
 
     //FUNCIONES
     function iniciarPartida() {
@@ -136,6 +151,7 @@ window.onload = function () {
     }
 
     function dibujarLinea() {
+        
         if (linea.creciendo) {
             linea.height += 4;
         }
@@ -147,7 +163,7 @@ window.onload = function () {
         ctx.translate(linea.x, linea.y);
         if (linea.cayendo) {
             ctx.rotate(linea.angle);
-
+            
         }
 
         ctx.drawImage(
@@ -318,11 +334,16 @@ window.onload = function () {
     //MOVIMIENTO
     function moverCastor() {
         if (castor.cruzando) {
+            if (sonidoPasos.paused) {
+                iniciarSonido(sonidoPasos);
+            }
+    
             const distanciaRecorrida = 5;
             castor.x += distanciaRecorrida;
             if (castor.x >= troncos[1].x + troncos[1].width / 2 - castor.width / 2) {
                 castor.cruzando = false;
                 moverPlataformas(distanciaRecorrida);
+                detenerSonido(sonidoPasos);
             }
         }
     }
@@ -443,6 +464,8 @@ window.onload = function () {
 
     //COLISIONES
     function colisionTroncoPlataforma() {
+        console.log(linea.y);
+        console.log(linea.height);
         const troncoSuperior = linea.y - linea.height;
         const troncoDerecha = linea.x;
 
