@@ -27,6 +27,7 @@ window.onload = function () {
     let idIntervaloCaminando;
     let idIntervaloConstruyendo;
     let velocidadAngular = 0;
+    let leaderboard = JSON.parse(localStorage.getItem("leaderboard"));
 
     // Parámetros del tronco generado por el jugador
     let linea = { x: 0, y: 600, height: 0, angle: 0, creciendo: false, cayendo: false };
@@ -81,10 +82,12 @@ window.onload = function () {
         sonido.currentTime = 0;
     }
 
+    mostrarLeaderboard();
 
     //FUNCIONES
     function iniciarPartida() {
         iniciarSonido(sonidoFondo);
+
         juegoIniciado = true;
         botonIniciar.style.visibility = "hidden";
         pantallaOpacidad.style.visibility = "hidden";
@@ -115,7 +118,7 @@ window.onload = function () {
 
     function finPartida() {
         detenerSonido(sonidoFondo);
-        juegoIniciado = false;
+        actualizarLeaderboard(puntuación);
         botonIniciar.style.visibility = "visible";
         pantallaOpacidad.style.visibility = "visible";
     
@@ -141,6 +144,28 @@ window.onload = function () {
         intervaloConstruyendo = false;
     }
     
+    function actualizarLeaderboard(nuevaPuntuacion) {
+        leaderboard.push(nuevaPuntuacion);
+    
+        leaderboard.sort((a, b) => b - a);
+    
+        leaderboard = leaderboard.slice(0, 5);
+
+        localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
+    
+        mostrarLeaderboard();
+    }
+
+    function mostrarLeaderboard() {
+        const leaderboardUl = document.getElementById("leaderboard");
+        leaderboardUl.innerHTML = "";
+    
+        leaderboard.forEach((score, index) => {
+            const li = document.createElement("li");
+            li.textContent = `${index + 1}. ${score}`;
+            leaderboardUl.appendChild(li);
+        });
+    }
 
     //DIBUJAR
     function dibujarFondo() {
