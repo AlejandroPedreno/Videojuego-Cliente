@@ -77,11 +77,13 @@ body {
 }
 
 #leaderboard li {
+    list-style-type: none !important;
     font-size: 18px;
-    margin: 5px 0;
     margin: 5px 0;
     position: relative;
     padding-left: 25px; 
+    border-bottom: 1px solid black;
+    
 }
 
 #leaderboard li::before {                       /* Para enumerar de forma 1º , 2º , 3º... */                                            

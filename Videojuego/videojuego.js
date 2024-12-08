@@ -118,25 +118,25 @@ window.onload = function () {
 
     function finPartida() {
         detenerSonido(sonidoFondo);
-       // actualizarLeaderboard(puntuación);
+        // actualizarLeaderboard(puntuación);
         botonIniciar.style.visibility = "visible";
         pantallaOpacidad.style.visibility = "visible";
-    
+
         troncos.length = 0;
-    
+
         linea.height = 0;
         linea.angle = 0;
         linea.creciendo = false;
         linea.cayendo = false;
-    
+
         vidas = 3;
         actualizarLeaderboard(puntuación);
         puntuación = 0;
-    
+
         castor.cruzando = false;
         castor.x = 100;
         castor.y = 570;
-    
+
         clearInterval(idIntervaloEstático);
         clearInterval(idIntervaloCaminando);
         clearInterval(idIntervaloConstruyendo);
@@ -144,28 +144,33 @@ window.onload = function () {
         intervaloCaminando = false;
         intervaloConstruyendo = false;
     }
-    
+
     function actualizarLeaderboard(nuevaPuntuacion) {
         leaderboard.push(nuevaPuntuacion);
-    
+
         leaderboard.sort((a, b) => b - a);
-    
+
         leaderboard = leaderboard.slice(0, 5);
 
         localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
-    
+
         mostrarLeaderboard();
     }
 
     function mostrarLeaderboard() {
         const leaderboardUl = document.getElementById("leaderboard");
         leaderboardUl.innerHTML = "";
-    
+
         leaderboard.forEach((score) => {
             const li = document.createElement("li");
-            li.textContent = `${score}`;
+            if (score != 1) {
+                li.textContent = `${score} puntos`;
+            } else {
+                li.textContent = `${score} punto`;
+            }
             leaderboardUl.appendChild(li);
         });
+
     }
 
     //DIBUJAR
@@ -180,7 +185,7 @@ window.onload = function () {
         ctx.fillRect(15, 15, 166, 26);
 
         ctx.strokeStyle = "black";
-        ctx.lineWidth = 2;         
+        ctx.lineWidth = 2;
         ctx.strokeRect(15, 15, 166, 26);
 
         ctx.font = "24px Arial";
@@ -195,7 +200,7 @@ window.onload = function () {
         ctx.fillRect(999, 15, 85, 25);
 
         ctx.strokeStyle = "black";
-        ctx.lineWidth = 2;         
+        ctx.lineWidth = 2;
         ctx.strokeRect(999, 15, 85, 25);
 
         for (let i = 0; i < vidas; i++) {
@@ -218,17 +223,17 @@ window.onload = function () {
     }
 
     function animarCaida() {
-        const factorAceleracion = 1.05; 
-        if (linea.angle < Math.PI / 2) { 
-            velocidadAngular *= factorAceleracion; 
-            linea.angle += velocidadAngular; 
-            requestAnimationFrame(animarCaida); 
+        const factorAceleracion = 1.05;
+        if (linea.angle < Math.PI / 2) {
+            velocidadAngular *= factorAceleracion;
+            linea.angle += velocidadAngular;
+            requestAnimationFrame(animarCaida);
         } else {
-            linea.angle = Math.PI / 2; 
-            verificarCruce(); 
+            linea.angle = Math.PI / 2;
+            verificarCruce();
         }
     }
-    
+
     velocidadAngular += 0.01 * Math.pow(linea.angle, 2);
 
     function dibujarLinea() {
@@ -456,7 +461,7 @@ window.onload = function () {
     //OTRAS FUNCIONES
     function verificarCruce() {
         let vericidad = colisionTroncoPlataforma();
-        if (vericidad==true) {
+        if (vericidad == true) {
             console.log(colisionTroncoPlataforma());
             permitirPasoCastor();
         } else {
@@ -535,89 +540,89 @@ window.onload = function () {
         }
     });
 
-canvas.addEventListener("mouseup", () => {
-    if (juegoIniciado && linea.creciendo) {
-        detenerSonido(sonidoConstruyendo);
-        linea.creciendo = false;
-        linea.cayendo = true;
-        velocidadAngular = Math.PI / 160; // Velocidad de caída
+    canvas.addEventListener("mouseup", () => {
+        if (juegoIniciado && linea.creciendo) {
+            detenerSonido(sonidoConstruyendo);
+            linea.creciendo = false;
+            linea.cayendo = true;
+            velocidadAngular = Math.PI / 160; // Velocidad de caída
 
-        // Inicia la animación de caída
-        requestAnimationFrame(animarCaida);
-    }
-});
+            // Inicia la animación de caída
+            requestAnimationFrame(animarCaida);
+        }
+    });
 
     //COLISIONES
     function colisionTroncoPlataforma() {
-      /*  console.log(linea.y);
-        console.log(linea.height);
-        console.log(linea.width);
-        console.log(troncos[1].height);
-        console.log(troncos[1].width);*/
+        /*  console.log(linea.y);
+          console.log(linea.height);
+          console.log(linea.width);
+          console.log(troncos[1].height);
+          console.log(troncos[1].width);*/
         const troncoSuperior = linea.height;
-        const plataformaInicial = linea.x + linea.height * Math.cos(linea.angle) ;
+        const plataformaInicial = linea.x + linea.height * Math.cos(linea.angle);
         console.log(troncoSuperior);
-        const plataformaIzquierda = troncos[1].x + (0.2767*troncos[1].width);           //He sacado el 27,67% en GIMP, dejando fuera la parte del tronco no visible
-        const plataformaDerecha = troncos[1].x+(0.8*troncos[1].width);                  //He sacado el 80% en GIMP, dejando fuera la parte del tronco no visible
+        const plataformaIzquierda = troncos[1].x + (0.2767 * troncos[1].width);           //He sacado el 27,67% en GIMP, dejando fuera la parte del tronco no visible
+        const plataformaDerecha = troncos[1].x + (0.8 * troncos[1].width);                  //He sacado el 80% en GIMP, dejando fuera la parte del tronco no visible
         const plataformaArriba = troncos[1].y;
         console.log(plataformaIzquierda);
         console.log(plataformaInicial);
-        console.log(plataformaIzquierda-plataformaInicial);
-        if(troncoSuperior >= (plataformaIzquierda-plataformaInicial) && troncoSuperior <= (plataformaDerecha-plataformaInicial)){
+        console.log(plataformaIzquierda - plataformaInicial);
+        if (troncoSuperior >= (plataformaIzquierda - plataformaInicial) && troncoSuperior <= (plataformaDerecha - plataformaInicial)) {
             return true;
-        }else{
+        } else {
             return false;
         }
-        
-            
+
+
     }
 
-/*    function dibujarPuntoNegro() {              //Puntos para tomar referencias
-        if (troncos.length > 1) {
-            const x = troncos[1].x+(0.2767*troncos[1].width);
-            const y = troncos[1].y;
-    
-            ctx.fillStyle = "black";
-            ctx.fillRect(x, y, 5, 5); 
+    /*    function dibujarPuntoNegro() {              //Puntos para tomar referencias
+            if (troncos.length > 1) {
+                const x = troncos[1].x+(0.2767*troncos[1].width);
+                const y = troncos[1].y;
+        
+                ctx.fillStyle = "black";
+                ctx.fillRect(x, y, 5, 5); 
+            }
+            if(troncos.length>1){
+                const x = troncos[1].x+(0.8*troncos[1].width);
+                const y = troncos[1].y; 
+        
+                ctx.fillStyle = "black";
+                ctx.fillRect(x, y, 5, 5); 
+            }
+            if(troncos.length>1){
+                const x = troncos[1].x+(0.2767*troncos[1].width); 
+                const y = troncos[1].y+30; 
+        
+                ctx.fillStyle = "black";
+                ctx.fillRect(x, y, 5, 5);
+            }
+            if(troncos.length>1){
+                const x = troncos[1].x+(0.8*troncos[1].width); 
+                const y = troncos[1].y-30; 
+        
+                ctx.fillStyle = "black";
+                ctx.fillRect(x, y, 5, 5); 
+            }
+            if(troncos.length>1){
+                const x = linea.x + linea.height * Math.cos(linea.angle)+1.5; 
+                const y = troncos[1].y; 
+        
+                ctx.fillStyle = "black";
+                ctx.fillRect(x, y, 5, 5); 
+            }
         }
-        if(troncos.length>1){
-            const x = troncos[1].x+(0.8*troncos[1].width);
-            const y = troncos[1].y; 
-    
-            ctx.fillStyle = "black";
-            ctx.fillRect(x, y, 5, 5); 
-        }
-        if(troncos.length>1){
-            const x = troncos[1].x+(0.2767*troncos[1].width); 
-            const y = troncos[1].y+30; 
-    
-            ctx.fillStyle = "black";
-            ctx.fillRect(x, y, 5, 5);
-        }
-        if(troncos.length>1){
-            const x = troncos[1].x+(0.8*troncos[1].width); 
-            const y = troncos[1].y-30; 
-    
-            ctx.fillStyle = "black";
-            ctx.fillRect(x, y, 5, 5); 
-        }
-        if(troncos.length>1){
-            const x = linea.x + linea.height * Math.cos(linea.angle)+1.5; 
-            const y = troncos[1].y; 
-    
-            ctx.fillStyle = "black";
-            ctx.fillRect(x, y, 5, 5); 
-        }
-    }
-    */
-    
+        */
+
 
     function colisionTroncoTecho() {
         if (linea.y - linea.height <= 0) {
             linea.creciendo = false;
             linea.cayendo = true;
-    
-            velocidadAngular = Math.PI / 160; 
+
+            velocidadAngular = Math.PI / 160;
             requestAnimationFrame(animarCaida);
         }
     }
