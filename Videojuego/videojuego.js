@@ -27,7 +27,7 @@ window.onload = function () {
     let idIntervaloCaminando;
     let idIntervaloConstruyendo;
     let velocidadAngular = 0;
-    let leaderboard = JSON.parse(localStorage.getItem("leaderboard"));
+    let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
 
     // Parámetros del tronco generado por el jugador
     let linea = { x: 0, y: 600, height: 0, angle: 0, creciendo: false, cayendo: false };
@@ -118,7 +118,7 @@ window.onload = function () {
 
     function finPartida() {
         detenerSonido(sonidoFondo);
-        actualizarLeaderboard(puntuación);
+       // actualizarLeaderboard(puntuación);
         botonIniciar.style.visibility = "visible";
         pantallaOpacidad.style.visibility = "visible";
     
@@ -130,6 +130,7 @@ window.onload = function () {
         linea.cayendo = false;
     
         vidas = 3;
+        actualizarLeaderboard(puntuación);
         puntuación = 0;
     
         castor.cruzando = false;
