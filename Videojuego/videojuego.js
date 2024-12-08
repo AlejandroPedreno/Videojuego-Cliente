@@ -7,11 +7,11 @@ window.onload = function () {
     const spriteCastor = new Image();
     const tronco = new Image();
 
+    const troncos = [];
+
     fondo.src = "Assets/Images/Fondo_prueba.avif";
     spriteCastor.src = "Assets/Images/sprite-castor.png";
     tronco.src = "Assets/Images/Tronco.png";
-
-    const troncos = [];
 
     let vidas = 3;
     let puntuación = 0;
@@ -53,7 +53,9 @@ window.onload = function () {
     tronco.width = 30;
     tronco.height = 50;
 
+
     //REFERENCIAS A HTML
+
     const pantallaOpacidad = document.getElementById("overlay");
     const botonIniciar = document.getElementById("Iniciarpartida");
     const sonidoPasos = document.getElementById("Pasos");
@@ -82,10 +84,10 @@ window.onload = function () {
         sonido.currentTime = 0;
     }
 
-    mostrarLeaderboard();
 
     //FUNCIONES
-    function iniciarPartida() {
+
+    function iniciarPartida() {                    //Inicia la partida  
         iniciarSonido(sonidoFondo);
 
         juegoIniciado = true;
@@ -96,7 +98,7 @@ window.onload = function () {
         gameLoop();
     }
 
-    function gameLoop() {
+    function gameLoop() {                   //Bucle principal del juego
         if (!juegoIniciado) return;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         dibujarFondo();
@@ -116,9 +118,8 @@ window.onload = function () {
         requestAnimationFrame(gameLoop);
     }
 
-    function finPartida() {
+    function finPartida() {                            //Finaliza la partida                                
         detenerSonido(sonidoFondo);
-        // actualizarLeaderboard(puntuación);
         botonIniciar.style.visibility = "visible";
         pantallaOpacidad.style.visibility = "visible";
 
@@ -145,7 +146,7 @@ window.onload = function () {
         intervaloConstruyendo = false;
     }
 
-    function actualizarLeaderboard(nuevaPuntuacion) {
+    function actualizarLeaderboard(nuevaPuntuacion) {                   //Actualiza el marcador         
         leaderboard.push(nuevaPuntuacion);
 
         leaderboard.sort((a, b) => b - a);
@@ -157,7 +158,7 @@ window.onload = function () {
         mostrarLeaderboard();
     }
 
-    function mostrarLeaderboard() {
+    function mostrarLeaderboard() {                                          //Muestra el marcador            
         const leaderboardUl = document.getElementById("leaderboard");
         leaderboardUl.innerHTML = "";
 
@@ -173,12 +174,14 @@ window.onload = function () {
 
     }
 
+
     //DIBUJAR
-    function dibujarFondo() {
+
+    function dibujarFondo() {                                   //Dibuja el fondo del juego
         ctx.drawImage(fondo, 0, 0, canvas.width, canvas.height);
     }
 
-    function dibujarPuntuación() {
+    function dibujarPuntuación() {                              //Dibuja la puntuación del jugador
 
 
         ctx.fillStyle = "lightgrey";
@@ -194,7 +197,7 @@ window.onload = function () {
 
     }
 
-    function dibujarVidas() {
+    function dibujarVidas() {                        //Dibuja las vidas del jugador     
         ctx.font = "18px Arial";
         ctx.fillStyle = "lightgrey";
         ctx.fillRect(999, 15, 85, 25);
@@ -208,8 +211,7 @@ window.onload = function () {
         }
     }
 
-
-    function dibujarPlataformas() {
+    function dibujarPlataformas() {                     //Dibuja las plataformas
 
         troncos.forEach((plataforma) => {
             ctx.drawImage(
@@ -222,7 +224,7 @@ window.onload = function () {
         });
     }
 
-    function animarCaida() {
+    function animarCaida() {                        //Animación de caída del tronco generado por el jugador
         const factorAceleracion = 1.05;
         if (linea.angle < Math.PI / 2) {
             velocidadAngular *= factorAceleracion;
@@ -234,10 +236,9 @@ window.onload = function () {
         }
     }
 
-    velocidadAngular += 0.01 * Math.pow(linea.angle, 2);
+    velocidadAngular += 0.01 * Math.pow(linea.angle, 2);            //Aumenta la velocidad de caída del tronco
 
-    function dibujarLinea() {
-
+    function dibujarLinea() {                       //Dibuja la linea que genera el jugador
         if (linea.creciendo) {
 
             colisionTroncoTecho();
@@ -246,14 +247,12 @@ window.onload = function () {
         const primerTronco = troncos[0];
         linea.x = (primerTronco.x + primerTronco.width / 2) + 10;
         linea.y = primerTronco.y + 4;
-
         ctx.save();
         ctx.translate(linea.x, linea.y);
         if (linea.cayendo) {
             ctx.rotate(linea.angle);
 
         }
-
         ctx.drawImage(
             tronco,
             -tronco.width / 2,
@@ -264,9 +263,12 @@ window.onload = function () {
         ctx.restore();
     }
 
+    //ANIMACIONES
+
+    //Valores según la longitud de cada sprite
+
     function animacionEstática() {
         posicion = (posicion + 1) % castor.animacionCastorNormal.length;
-
     }
 
     function animacionCaminando() {
@@ -277,7 +279,7 @@ window.onload = function () {
         posicion = (posicion + 1) % castor.animacionCastorConstruyendo.length;
     }
 
-    function iniciarAnimaciónEstática() {
+    function iniciarAnimaciónEstática() {               //Inicia la animación del castor en su posición normal
         if (!intervaloEstático) {
             if (idIntervaloCaminando) {
                 clearInterval(idIntervaloCaminando);
@@ -291,7 +293,8 @@ window.onload = function () {
             idIntervaloEstático = setInterval(animacionEstática, 1000 / 6);
         }
     }
-    function iniciarAnimaciónCaminando() {
+
+    function iniciarAnimaciónCaminando() {              //Inicia la animación del castor caminando
         if (!intervaloCaminando) {
             if (idIntervaloEstático) {
                 clearInterval(idIntervaloEstático);
@@ -305,7 +308,8 @@ window.onload = function () {
             idIntervaloCaminando = setInterval(animacionCaminando, 1000 / 24);
         }
     }
-    function iniciarAnimaciónConstruyendo() {
+
+    function iniciarAnimaciónConstruyendo() {               //Inicia la animación del castor construyendo
         if (!intervaloConstruyendo) {
             if (idIntervaloEstático) {
                 clearInterval(idIntervaloEstático);
@@ -320,8 +324,7 @@ window.onload = function () {
         }
     }
 
-
-    function dibujarCastor() {
+    function dibujarCastor() {                      //Dibuja al castor moviéndose en su posición normal
         iniciarAnimaciónEstática();
         if (posicion > 2) {
             posicion = 0;
@@ -337,7 +340,6 @@ window.onload = function () {
             castor.width = 45;
             castor.height = 39;
         }
-
         ctx.drawImage(castor.imagen,
             castor.animacionCastorNormal[posicion][0],
             castor.animacionCastorNormal[posicion][1],
@@ -349,10 +351,8 @@ window.onload = function () {
             castor.height);
 
     }
-    function dibujarCaminando() {
-
+    function dibujarCaminando() {                           //Dibuja al castor caminando
         iniciarAnimaciónCaminando();
-
         if (posicion == 0) {
             castor.width = 49;
             castor.height = 40;
@@ -391,7 +391,7 @@ window.onload = function () {
         }
     }
 
-    function dibujarConstruyendo() {
+    function dibujarConstruyendo() {                    //Dibuja al castor construyendo
         iniciarAnimaciónConstruyendo();
         if (posicion == 0) {
             castor.width = 44;
@@ -437,29 +437,26 @@ window.onload = function () {
     }
 
     function moverPlataformas(distanciaRecorrida) {
-        // Mover todos los troncos hacia la izquierda por la distancia recorrida
+        // Mover todos los troncos hacia la izquierda por la distancia recorrida y elimina el primer tronco
         troncos.forEach(tronco => {
             tronco.x -= distanciaRecorrida;
         });
-
-
         troncos.shift();
 
-        console.log(canvas.width);
-        // Generar un nuevo tronco al final del array
+        // Genera un nuevo tronco al final del array
         let ancho = Math.random() * 100 + 50;
         let xPos = troncos[troncos.length - 1].x + troncos[troncos.length - 1].width + Math.random() * 100 + 50;
         troncos.push({ x: xPos, y: 600, width: ancho, height: 200 });
-
-        // Reposicionar el castor en el centro del primer tronco
+        
         castor.x = troncos[0].x + troncos[0].width / 2 - castor.width / 2;
 
-        // Reiniciar la línea
         reiniciarLinea();
     }
 
+
     //OTRAS FUNCIONES
-    function verificarCruce() {
+
+    function verificarCruce() {                             //Comprueba si el tronco generado cae encima de la siguiente plataforma
         let vericidad = colisionTroncoPlataforma();
         if (vericidad == true) {
             console.log(colisionTroncoPlataforma());
@@ -471,7 +468,7 @@ window.onload = function () {
         }
     }
 
-    function reiniciarLinea() {
+    function reiniciarLinea() {         //La linea que genera el jugador vuelve a su posición inicial
         linea.height = 0;
         linea.angle = 0;
         linea.creciendo = false;
@@ -485,84 +482,84 @@ window.onload = function () {
         // Espera a que termine de cruzar antes de mover el escenario
         setTimeout(() => {
             moverEscenario();
-        }, 500); // Ajusta el tiempo según la duración del cruce
+        }, 500);
     }
-
 
     function crearPlataformas() {
         for (let i = 0; i < 10; i++) {
-            let ancho = Math.random() * 100 + 50; // Anchura aleatoria
-            let distanciaMinima = 120; // Distancia mínima entre plataformas
-            let distanciaMaxima = 200; // Distancia máxima entre plataformas
-            let xPos =
-                i === 0
-                    ? 50 // Primera plataforma siempre cerca
-                    : troncos[troncos.length - 1].x + troncos[troncos.length - 1].width + Math.random() * (distanciaMaxima - distanciaMinima) + distanciaMinima;
+            let ancho = Math.random() * 100 + 50;
+            let distanciaMinima = 120;
+            let distanciaMaxima = 200;
+            let lastTronco = troncos[troncos.length - 1];
+            let distanciaAleatoria = Math.random() * (distanciaMaxima - distanciaMinima) + distanciaMinima;
+            let xPos;           // Posición x de la primera pltaforma   
 
+            if (i === 0) {
+                xPos = 50;
+            } else {
+                xPos = lastTronco.x + lastTronco.width + distanciaAleatoria;
+            }
+            
             troncos.push({ x: xPos, y: 600, width: ancho, height: 200 });
         }
 
         // Castor sobre la primera plataforma
-        castor.x = troncos[0].x + troncos[0].width / 2 - castor.width / 2; // Centrado sobre la primera plataforma
-        castor.y = troncos[0].y - castor.height; // Justo encima de la plataforma
+        castor.x = troncos[0].x + troncos[0].width / 2 - castor.width / 2;
+        castor.y = troncos[0].y - castor.height; 
     }
-
 
     function moverEscenario() {
         const velocidad = 5;
         const distancia = castor.x - 100;
         const intervalo = setInterval(() => {
 
+            // Mueve las plataformas hacia la izquierda
+
             troncos.forEach(tronco => {
                 tronco.x -= velocidad;
             });
 
-            // Mueve también la línea
+            // Mueve el tronco hacia la izquierda
             linea.x -= velocidad;
 
-            // Actualiza la posición del castor para simular desplazamiento del entorno
+            // Mueve el castor hacia la izquierda
             castor.x -= velocidad;
 
-            // Si el castor llega a su posición inicial, detén el desplazamiento
+            // Si el castor llega a su posición inicial deja de moverse el escenario
             if (castor.x <= 100) {
-                castor.x = 100; // Asegura que esté exactamente en la posición inicial
-                clearInterval(intervalo); // Detiene la animación
+                castor.x = 100;
+                clearInterval(intervalo);
             }
-        }, 16); // Aproximadamente 60 fps
+        }, 16);
     }
 
 
     //EVENTOS
-    canvas.addEventListener("mousedown", () => {
+    canvas.addEventListener("mousedown", () => {            //Cuando se pulsa el ratón se genera un tronco hacia arriba
         if (juegoIniciado && !linea.cayendo) {
             iniciarSonido(sonidoConstruyendo);
             linea.creciendo = true;
         }
     });
 
-    canvas.addEventListener("mouseup", () => {
+    canvas.addEventListener("mouseup", () => {              //Cuando se deja de pulsar el ratón el tronco deja de crecer y cae hacia la derecha
         if (juegoIniciado && linea.creciendo) {
             detenerSonido(sonidoConstruyendo);
             linea.creciendo = false;
             linea.cayendo = true;
-            velocidadAngular = Math.PI / 160; // Velocidad de caída
-
-            // Inicia la animación de caída
+            velocidadAngular = Math.PI / 160;
             requestAnimationFrame(animarCaida);
         }
     });
 
+
     //COLISIONES
+
     function colisionTroncoPlataforma() {
-        /*  console.log(linea.y);
-          console.log(linea.height);
-          console.log(linea.width);
-          console.log(troncos[1].height);
-          console.log(troncos[1].width);*/
         const troncoSuperior = linea.height;
         const plataformaInicial = linea.x + linea.height * Math.cos(linea.angle);
         console.log(troncoSuperior);
-        const plataformaIzquierda = troncos[1].x + (0.2767 * troncos[1].width);           //He sacado el 27,67% en GIMP, dejando fuera la parte del tronco no visible
+        const plataformaIzquierda = troncos[1].x + (0.2767 * troncos[1].width);             //He sacado el 27,67% en GIMP, dejando fuera la parte del tronco no visible
         const plataformaDerecha = troncos[1].x + (0.8 * troncos[1].width);                  //He sacado el 80% en GIMP, dejando fuera la parte del tronco no visible
         const plataformaArriba = troncos[1].y;
         console.log(plataformaIzquierda);
@@ -573,50 +570,7 @@ window.onload = function () {
         } else {
             return false;
         }
-
-
     }
-
-    /*    function dibujarPuntoNegro() {              //Puntos para tomar referencias
-            if (troncos.length > 1) {
-                const x = troncos[1].x+(0.2767*troncos[1].width);
-                const y = troncos[1].y;
-        
-                ctx.fillStyle = "black";
-                ctx.fillRect(x, y, 5, 5); 
-            }
-            if(troncos.length>1){
-                const x = troncos[1].x+(0.8*troncos[1].width);
-                const y = troncos[1].y; 
-        
-                ctx.fillStyle = "black";
-                ctx.fillRect(x, y, 5, 5); 
-            }
-            if(troncos.length>1){
-                const x = troncos[1].x+(0.2767*troncos[1].width); 
-                const y = troncos[1].y+30; 
-        
-                ctx.fillStyle = "black";
-                ctx.fillRect(x, y, 5, 5);
-            }
-            if(troncos.length>1){
-                const x = troncos[1].x+(0.8*troncos[1].width); 
-                const y = troncos[1].y-30; 
-        
-                ctx.fillStyle = "black";
-                ctx.fillRect(x, y, 5, 5); 
-            }
-            if(troncos.length>1){
-                const x = linea.x + linea.height * Math.cos(linea.angle)+1.5; 
-                const y = troncos[1].y; 
-        
-                ctx.fillStyle = "black";
-                ctx.fillRect(x, y, 5, 5); 
-            }
-        }
-        */
-
-
     function colisionTroncoTecho() {
         if (linea.y - linea.height <= 0) {
             linea.creciendo = false;
@@ -628,10 +582,11 @@ window.onload = function () {
     }
 
 
+    //INICIALIZACIÓN
+
     imagen = new Image();
     imagen.src = "Assets/Images/sprite-castor.png";
     Castor.prototype.imagen = imagen;
-
     castor = new Castor(x, y);
-
+    mostrarLeaderboard();
 };
