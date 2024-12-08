@@ -55,7 +55,7 @@ body {
     position: absolute;
     top: 10%;
     right: 1.2%;
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: rgb(97, 197, 240);
     border: 2px solid black;
     border-radius: 10px;
     padding: 20px;
@@ -64,7 +64,6 @@ body {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     font-family: Arial, sans-serif;
 }
-
 #leaderboard-container h2 {
     font-size: 24px;
     margin: 0 0 10px 0;
@@ -74,11 +73,24 @@ body {
     list-style-type: none;
     padding: 0;
     margin: 0;
+    counter-reset: list-counter;
 }
 
 #leaderboard li {
     font-size: 18px;
     margin: 5px 0;
+    margin: 5px 0;
+    position: relative;
+    padding-left: 25px; 
+}
+
+#leaderboard li::before {                       /* Para enumerar de forma 1º , 2º , 3º... */                                            
+    counter-increment: list-counter;
+    content: counter(list-counter) "º"; 
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-weight: bold;
 }
 
 /*No quiero seleccionar el texto del canvas*/

@@ -161,9 +161,9 @@ window.onload = function () {
         const leaderboardUl = document.getElementById("leaderboard");
         leaderboardUl.innerHTML = "";
     
-        leaderboard.forEach((score, index) => {
+        leaderboard.forEach((score) => {
             const li = document.createElement("li");
-            li.textContent = `${index + 1}. ${score}`;
+            li.textContent = `${score}`;
             leaderboardUl.appendChild(li);
         });
     }
