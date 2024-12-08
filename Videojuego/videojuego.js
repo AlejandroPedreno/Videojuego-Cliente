@@ -177,11 +177,11 @@ window.onload = function () {
 
 
         ctx.fillStyle = "lightgrey";
-        ctx.fillRect(15, 15, 154, 26);
+        ctx.fillRect(15, 15, 166, 26);
 
         ctx.strokeStyle = "black";
         ctx.lineWidth = 2;         
-        ctx.strokeRect(15, 15, 154, 26);
+        ctx.strokeRect(15, 15, 166, 26);
 
         ctx.font = "24px Arial";
         ctx.fillStyle = "black";
