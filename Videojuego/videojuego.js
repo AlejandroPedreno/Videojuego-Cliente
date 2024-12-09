@@ -69,6 +69,7 @@ window.onload = function () {
     const sonidoConstruyendo = document.getElementById("SonidoConstruyendo");
     const sonidoExplosion = document.getElementById("SonidoExplosion");
     const sonidoSalto = document.getElementById("SonidoSalto");
+    const sonidoVidaExtra = document.getElementById("SonidoVida");
 
     sonidoPasos.playbackRate = 2;
     sonidoFondo.loop = true;
@@ -938,7 +939,7 @@ window.onload = function () {
     let x_VidasExtra = 110;
     let y_VidasExtra = 450;
     let vidasExtra;
-    let probabilidadVidasExtra = 0.1;
+    let probabilidadVidasExtra = 1;
     let posicionSpriteVidasExtra=0;
 
     function VidasExtra(x_, y_) {
@@ -967,6 +968,7 @@ window.onload = function () {
                 if(vidas<3){
                 vidas++;
                 }
+                iniciarSonido(sonidoVidaExtra);
                 vidasExtraArray.splice(index, 1); 
             }
         });
