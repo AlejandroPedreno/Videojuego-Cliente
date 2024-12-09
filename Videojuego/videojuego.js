@@ -880,9 +880,19 @@ window.onload = function () {
     let gravedad = 1;
 
 
+    let cooldown = 1100;            //Tiempo de espera entre saltos
+    let puedeSaltar = true;
+    
     document.addEventListener("keydown", (event) => {
-        if (event.code === "Space" && !castor.saltando && juegoIniciado) {
+        if (event.code === "Space" && !castor.saltando && juegoIniciado && puedeSaltar) {
             castor.saltando = true;
+            puedeSaltar = false;
+    
+            realizarSalto();
+    
+            setTimeout(() => {
+                puedeSaltar = true;
+            }, cooldown);
         }
     });
     function realizarSalto() {
