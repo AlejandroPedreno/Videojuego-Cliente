@@ -66,6 +66,7 @@ window.onload = function () {
     const sonidoPasos = document.getElementById("Pasos");
     const sonidoFondo = document.getElementById("SonidoFondo");
     const sonidoConstruyendo = document.getElementById("SonidoConstruyendo");
+    const sonidoExplosion = document.getElementById("SonidoExplosion");
 
     sonidoPasos.playbackRate = 2;
     sonidoFondo.loop = true;
@@ -729,6 +730,7 @@ window.onload = function () {
         this.explotando = false;
         this.cuadroActual = 0;
         this.ultimoTiempo = Date.now();
+        this.sonidoReproducido = false;
     }
 
     function animacionBombaEstatica() {
@@ -740,7 +742,33 @@ window.onload = function () {
     function dibujarBomba() {
         bombas.forEach((bomba, index) => {
             if (!bomba.explotando) {                // Dibuja bomba normal
-                tamañoSegúnPosicionBomba();
+                if (posicionBomba == 0) {
+                    anchoCanvas = 66;
+                    altoCanvas = 63;
+                    if (puntuación < 10) {
+                        bomba.width = 20;
+                        bomba.height = 20;
+                    } else if (puntuación > 10 && puntuación < 20) {
+                        bomba.width = 25;
+                        bomba.height = 25;
+                    } else {
+                        bomba.width = 30;
+                        bomba.height = 30;
+                    }
+                } else if (posicionBomba == 1) {
+                    anchoCanvas = 75;
+                    altoCanvas = 70;
+                    if (puntuación < 10) {
+                        bomba.width = 22;
+                        bomba.height = 22;
+                    } else if (puntuación > 10 && puntuación < 20) {
+                        bomba.width = 27;
+                        bomba.height = 27;
+                    } else {
+                        bomba.width = 33;
+                        bomba.height = 33;
+                    }
+                }
                 ctx.drawImage(
                     bomba.imagen,
                     bomba.animacionBomba[posicionBomba][0],
@@ -753,6 +781,10 @@ window.onload = function () {
                     bomba.height
                 );
             } else {        //Animacion de bomba explotando
+                if (bomba.cuadroActual === 0 && !bomba.sonidoReproducido) {
+                    iniciarSonido(sonidoExplosion);
+                    bomba.sonidoReproducido = true;
+                }
                 let cuadro = bomba.cuadroActual;
                 let anchoCanvas = 200;
                 let altoCanvas = 200;
@@ -784,169 +816,88 @@ window.onload = function () {
         });
     }
 
-    function tamañoSegúnPosicionBomba() {
-        if (posicionBomba == 0) {
-            anchoCanvas = 66;
-            altoCanvas = 63;
+    function generarBomba() {
+        if (Math.random() < probabilidadBomba) {
+            const ultimoTronco = troncos[troncos.length - 1];
+            const penultimoTronco = troncos[troncos.length - 2];
+
+            // Calcula posición entre el penúltimo y último tronco
+            const posicionX = ((penultimoTronco.x + penultimoTronco.width * 0.53835) - bomba.width / 2) + (((ultimoTronco.x + ultimoTronco.width * 0.53835) - bomba.width / 2) - ((penultimoTronco.x + penultimoTronco.width * 0.53835) - bomba.width / 2)) / 2;
+
+            const posicionY = penultimoTronco.y - 10;
+
+            const nuevaBomba = new Bomba(posicionX, posicionY);
             if (puntuación < 10) {
-                bomba.width = 20;
-                bomba.height = 20;
+                nuevaBomba.width = 30;
+                nuevaBomba.height = 30;
             } else if (puntuación > 10 && puntuación < 20) {
-                bomba.width = 25;
-                bomba.height = 25;
-            } else {
-                bomba.width = 30;
-                bomba.height = 30;
+                nuevaBomba.width = 25;
+                nuevaBomba.height = 25;
+            } else if (puntuación > 20) {
+                nuevaBomba.width = 30;
+                nuevaBomba.height = 30;
             }
-        } else if (posicionBomba == 1) {
-            anchoCanvas = 75;
-            altoCanvas = 70;
-            if (puntuación < 10) {
-                bomba.width = 22;
-                bomba.height = 22;
-            } else if (puntuación > 10 && puntuación < 20) {
-                bomba.width = 27;
-                bomba.height = 27;
-            } else {
-                bomba.width = 33;
-                bomba.height = 33;
+
+            bombas.push(nuevaBomba);
+            console.log("Bomba generada en:", posicionX, posicionY);
+        }
+    }
+
+
+    function actualizarProbabilidadBomba() {
+        probabilidadBomba = Math.min(1, 0.25 + puntuación * 0.01); // Aumenta hasta un máximo del 100% de probabilidad
+    }
+
+    function verificarColisionBombas() {
+        bombas.forEach((bomba, index) => {
+            if (castor.x < bomba.x + bomba.width &&
+                castor.x + castor.width > bomba.x &&
+                castor.y < bomba.y + bomba.height &&
+                castor.y + castor.height > bomba.y) {
+                iniciarSonido(sonidoExplosion);
+                bomba.explotando = true;
+
             }
-        } else if (posicionBomba == 2) {
-            anchoCanvas = 128;
-            altoCanvas = 70;
-            if (puntuación < 10) {
-                bomba.width = 22;
-                bomba.height = 22;
-            } else if (puntuación > 10 && puntuación < 20) {
-                bomba.width = 27;
-                bomba.height = 27;
-            } else {
-                bomba.width = 33;
-                bomba.height = 33;
+        });
+    }
+
+    idIntervaloBomba = setInterval(animacionBombaEstatica, 1000 / 6);
+    idIntervaloBomba = setInterval(animacionBombaExplotando, 1000 / 0.2);
+    //Salto
+
+    let saltando = false;
+    let velocidadSalto = 15;
+    let gravedad = 1;
+
+
+    document.addEventListener("keydown", (event) => {
+        if (event.code === "Space" && !saltando && juegoIniciado) {
+            saltando = true;
+        }
+    });
+    function realizarSalto() {
+        if (saltando) {
+
+            castor.y -= velocidadSalto;
+            velocidadSalto -= gravedad;
+
+            if (velocidadSalto <= 0) {
+                velocidadSalto -= gravedad;
             }
-        } else if (posicionBomba == 3) {
-            anchoCanvas = 75;
-            altoCanvas = 70;
-            if (puntuación < 10) {
-                bomba.width = 22;
-                bomba.height = 22;
-            } else if (puntuación > 10 && puntuación < 20) {
-                bomba.width = 27;
-                bomba.height = 27;
-            } else {
-                bomba.width = 33;
-                bomba.height = 33;
-            }
-        } else if (posicionBomba == 4) {
-            anchoCanvas = 75;
-            altoCanvas = 70;
-            if (puntuación < 10) {
-                bomba.width = 22;
-                bomba.height = 22;
-            } else if (puntuación > 10 && puntuación < 20) {
-                bomba.width = 27;
-                bomba.height = 27;
-            } else {
-                bomba.width = 33;
-                bomba.height = 33;
-            }
-        } else if (posicionBomba == 5) {
-            anchoCanvas = 75;
-            altoCanvas = 70;
-            if (puntuación < 10) {
-                bomba.width = 22;
-                bomba.height = 22;
-            } else if (puntuación > 10 && puntuación < 20) {
-                bomba.width = 27;
-                bomba.height = 27;
-            } else {
-                bomba.width = 33;
-                bomba.height = 33;
+
+
+            if (castor.y >= 560) {
+                castor.y = 560;
+                saltando = false;
+                velocidadSalto = 15;
+                posicion = 0;
             }
         }
     }
 
-        function generarBomba() {
-            if (Math.random() < probabilidadBomba) {
-                const ultimoTronco = troncos[troncos.length - 1];
-                const penultimoTronco = troncos[troncos.length - 2];
+    imagenBomba = new Image();
+    imagenBomba.src = "Assets/Images/sprite-bomba.png";
+    Bomba.prototype.imagen = imagenBomba;
+    bomba = new Bomba(x_Bomba, y_Bomba);
 
-                // Calcula posición entre el penúltimo y último tronco
-                const posicionX = ((penultimoTronco.x + penultimoTronco.width * 0.53835) - bomba.width / 2) + (((ultimoTronco.x + ultimoTronco.width * 0.53835) - bomba.width / 2) - ((penultimoTronco.x + penultimoTronco.width * 0.53835) - bomba.width / 2)) / 2;
-
-                const posicionY = penultimoTronco.y - 10;
-
-                const nuevaBomba = new Bomba(posicionX, posicionY);
-                if (puntuación < 10) {
-                    nuevaBomba.width = 30;
-                    nuevaBomba.height = 30;
-                } else if (puntuación > 10 && puntuación < 20) {
-                    nuevaBomba.width = 25;
-                    nuevaBomba.height = 25;
-                } else if (puntuación > 20) {
-                    nuevaBomba.width = 30;
-                    nuevaBomba.height = 30;
-                }
-
-                bombas.push(nuevaBomba);
-                console.log("Bomba generada en:", posicionX, posicionY);
-            }
-        }
-
-
-        function actualizarProbabilidadBomba() {
-            probabilidadBomba = Math.min(1, 0.25 + puntuación * 0.01); // Aumenta hasta un máximo del 100%
-        }
-
-        function verificarColisionBombas() {
-            bombas.forEach((bomba, index) => {
-                if (castor.x < bomba.x + bomba.width &&
-                    castor.x + castor.width > bomba.x &&
-                    castor.y < bomba.y + bomba.height &&
-                    castor.y + castor.height > bomba.y) {
-                    bomba.explotando = true;
-
-                }
-            });
-        }
-
-        idIntervaloBomba = setInterval(animacionBombaEstatica, 1000 / 6);
-        idIntervaloBomba = setInterval(animacionBombaExplotando, 1000 / 0.2);
-        //Salto
-
-        let saltando = false;
-        let velocidadSalto = 15;
-        let gravedad = 1;
-
-
-        document.addEventListener("keydown", (event) => {
-            if (event.code === "Space" && !saltando && juegoIniciado) {
-                saltando = true;
-            }
-        });
-        function realizarSalto() {
-            if (saltando) {
-
-                castor.y -= velocidadSalto;
-                velocidadSalto -= gravedad;
-
-                if (velocidadSalto <= 0) {
-                    velocidadSalto -= gravedad;
-                }
-
-
-                if (castor.y >= 560) {
-                    castor.y = 560;
-                    saltando = false;
-                    velocidadSalto = 15;
-                    posicion = 0;
-                }
-            }
-        }
-
-        imagenBomba = new Image();
-        imagenBomba.src = "Assets/Images/sprite-bomba.png";
-        Bomba.prototype.imagen = imagenBomba;
-        bomba = new Bomba(x_Bomba, y_Bomba);
-
-    };
+};
