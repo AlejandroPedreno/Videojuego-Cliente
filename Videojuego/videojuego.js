@@ -114,17 +114,16 @@ window.onload = function () {
         dibujarPlataformas();
         dibujarLinea();
         dibujarBomba();
+        dibujarVidasExtra();
         verificarColisionBombas();
-
+        verificarColisionVidasExtra();
         if (castor.saltando) {
-            if(sonidoSalto.paused){
+            if (sonidoSalto.paused) {
                 iniciarSonido(sonidoSalto);
             }
             realizarSalto();
             dibujarSaltando();
-        }
-
-        else if (linea.creciendo && !castor.cruzando) {
+        } else if (linea.creciendo && !castor.cruzando) {
             dibujarConstruyendo();
         } else if (castor.cruzando && !linea.creciendo) {
             dibujarCaminando();
@@ -147,6 +146,7 @@ window.onload = function () {
 
         troncos.length = 0;
         bombas.length = 0;
+        vidasExtraArray.length = 0;
 
         probabilidadBomba = 0.3;
 
@@ -526,10 +526,10 @@ window.onload = function () {
         if (castor.cruzando) {
             if (sonidoPasos.paused) {
                 iniciarSonido(sonidoPasos);
-                if(castor.saltando===true){
+                if (castor.saltando === true) {
                     detenerSonido(sonidoPasos);
                 }
-                
+
             }
 
             const distanciaRecorrida = 5;
@@ -550,6 +550,9 @@ window.onload = function () {
         bombas.forEach(bomba => {
             bomba.x -= distanciaRecorrida;
         });
+        vidasExtraArray.forEach(vidasExtra => {
+            vidasExtra.x -= distanciaRecorrida;
+        });
         troncos.shift();
 
         // Genera un nuevo tronco al final del array
@@ -562,6 +565,7 @@ window.onload = function () {
             actualizarProbabilidadBomba();
             generarBomba();
         }
+        generarVidasExtra();
         reiniciarLinea();
     }
 
@@ -644,6 +648,14 @@ window.onload = function () {
                     bombas.splice(index, 1);
                 }
             });
+            vidasExtraArray.forEach((vidasExtra, index) => {
+                vidasExtra.x -= velocidad;
+
+                // Eliminar bombas fuera del escenario
+                if (vidasExtra.x + vidasExtra.width < 0) {
+                    vidasExtraArray.splice(index, 1);
+                }
+            });
 
             // Si el castor llega a su posición inicial deja de moverse el escenario
             if (castor.x <= 100) {
@@ -717,7 +729,7 @@ window.onload = function () {
 
     const bombas = [];
     let bomba;
-    let probabilidadBomba = 1;
+    let probabilidadBomba = 0;
     let x_Bomba = 0;
     let y_Bomba = 0;
     let posicionBomba = 0;
@@ -838,8 +850,8 @@ window.onload = function () {
 
             const nuevaBomba = new Bomba(posicionX, posicionY);
             if (puntuación < 10) {
-                nuevaBomba.width = 30;
-                nuevaBomba.height = 30;
+                nuevaBomba.width = 20;
+                nuevaBomba.height = 20;
             } else if (puntuación > 10 && puntuación < 20) {
                 nuevaBomba.width = 25;
                 nuevaBomba.height = 25;
@@ -855,7 +867,7 @@ window.onload = function () {
 
 
     function actualizarProbabilidadBomba() {
-        probabilidadBomba = Math.min(1, 0.25 + puntuación * 0.01); // Aumenta hasta un máximo del 100% de probabilidad
+        probabilidadBomba = Math.min(1, 0.35 + puntuación * 0.005); // Aumenta exponencialmente hasta un máximo del 100% de probabilidad
     }
 
     function verificarColisionBombas() {
@@ -882,14 +894,14 @@ window.onload = function () {
 
     let cooldown = 1100;            //Tiempo de espera entre saltos
     let puedeSaltar = true;
-    
+
     document.addEventListener("keydown", (event) => {
         if (event.code === "Space" && !castor.saltando && juegoIniciado && puedeSaltar) {
             castor.saltando = true;
             puedeSaltar = false;
-    
+
             realizarSalto();
-    
+
             setTimeout(() => {
                 puedeSaltar = true;
             }, cooldown);
@@ -919,5 +931,93 @@ window.onload = function () {
     imagenBomba.src = "Assets/Images/sprite-bomba.png";
     Bomba.prototype.imagen = imagenBomba;
     bomba = new Bomba(x_Bomba, y_Bomba);
+
+
+    //VIDAS
+    const vidasExtraArray = [];
+    let x_VidasExtra = 110;
+    let y_VidasExtra = 450;
+    let vidasExtra;
+    let probabilidadVidasExtra = 0.1;
+    let posicionSpriteVidasExtra=0;
+
+    function VidasExtra(x_, y_) {
+        this.x = x_;
+        this.y = y_;
+        this.width = 25;
+        this.height = 25;
+        this.spriteVidasExtra = [
+            [17, 25], [186, 27], [354, 25], [522, 25], [691, 25], [57, 188], [198, 187], [354, 187], [509, 187], [665, 188] //w: 115 h: 110
+        ];
+    }
+
+    function animacionVidasExtra() {
+        posicionSpriteVidasExtra = (posicionSpriteVidasExtra + 1) % vidasExtra.spriteVidasExtra.length;
+    }
+
+    idIntervaloVidasExtra = setInterval(animacionVidasExtra, 1000 / 6);
+
+
+    function verificarColisionVidasExtra() {
+        vidasExtraArray.forEach((vidasExtra, index) => {
+            if (castor.x < vidasExtra.x + vidasExtra.width &&
+                castor.x + castor.width > vidasExtra.x &&
+                castor.y < vidasExtra.y + vidasExtra.height &&
+                castor.y + castor.height > vidasExtra.y) {
+                if(vidas<3){
+                vidas++;
+                }
+                vidasExtraArray.splice(index, 1); 
+            }
+        });
+    }
+    
+
+
+    function dibujarVidasExtra() {
+        vidasExtraArray.forEach((vidasExtra, index) => {
+                anchoCanvas = 115;
+                altoCanvas = 110;
+                vidasExtra.width = 20;
+                vidasExtra.height = 20;
+                vidasExtra.y = 450;
+                console.log(vidasExtraArray[0].y);
+                ctx.drawImage(
+                    vidasExtra.imagen,
+                    vidasExtra.spriteVidasExtra[posicionSpriteVidasExtra][0],
+                    vidasExtra.spriteVidasExtra[posicionSpriteVidasExtra][1],
+                    anchoCanvas,
+                    altoCanvas,
+                    vidasExtra.x,
+                    vidasExtra.y,
+                    vidasExtra.width,
+                    vidasExtra.height
+                );
+        }
+        )
+    };
+
+    function generarVidasExtra() {
+        if (Math.random() <= probabilidadVidasExtra) {
+            const ultimoTronco = troncos[troncos.length - 1];
+            const penultimoTronco = troncos[troncos.length - 2];
+
+            // Calcula posición entre el penúltimo y último tronco
+            const posicionX = ((penultimoTronco.x + penultimoTronco.width * 0.53835) - vidasExtra.width / 2) + (((ultimoTronco.x + ultimoTronco.width * 0.53835) - vidasExtra.width / 2) - ((penultimoTronco.x + penultimoTronco.width * 0.53835) - vidasExtra.width / 2)) / 2;
+
+            const posicionY = penultimoTronco.y - 10;
+
+            const nuevaVidasExtra = new VidasExtra(posicionX, posicionY);
+
+            vidasExtraArray.push(nuevaVidasExtra);
+            console.log("Vida generada en:", posicionX, posicionY);
+        }
+    }
+
+
+    imagenVidasExtra = new Image();
+    imagenVidasExtra.src = "Assets/Images/sprite-vidas.png";
+    VidasExtra.prototype.imagen = imagenVidasExtra;
+    vidasExtra = new VidasExtra(x_VidasExtra, y_VidasExtra);
 
 };
