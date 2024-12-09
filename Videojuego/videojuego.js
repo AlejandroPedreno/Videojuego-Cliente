@@ -174,14 +174,10 @@ window.onload = function () {
         } else {
             dibujarCastor();
         }
-
         moverCastor();
         dibujarPuntuación();
         dibujarVidas();
         requestAnimationFrame(gameLoop);
-        if (bombas.length > 0) {
-            console.log(bombas[0].explotando);
-        }
     }
 
     //Funcion para iniciar la partida
@@ -291,7 +287,6 @@ window.onload = function () {
     function verificarCruce() {                             //Comprueba si el tronco generado cae encima de la siguiente plataforma
         let vericidad = colisionTroncoPlataforma();
         if (vericidad == true) {
-            console.log(colisionTroncoPlataforma());
             permitirPasoCastor();
         } else {
             vidas--;
@@ -479,7 +474,6 @@ window.onload = function () {
             vidasExtra.width = 20;
             vidasExtra.height = 20;
             vidasExtra.y = 450;
-            console.log(vidasExtraArray[0].y);
             ctx.drawImage(
                 vidasExtra.imagen,
                 vidasExtra.spriteVidasExtra[posicionSpriteVidasExtra][0],
@@ -598,7 +592,7 @@ window.onload = function () {
             }
 
             bombas.push(nuevaBomba);
-            console.log("Bomba generada en:", posicionX, posicionY);
+
         }
     }
 
@@ -616,7 +610,7 @@ window.onload = function () {
             const nuevaVidasExtra = new VidasExtra(posicionX, posicionY);
 
             vidasExtraArray.push(nuevaVidasExtra);
-            console.log("Vida generada en:", posicionX, posicionY);
+
         }
     }
 
@@ -947,13 +941,8 @@ window.onload = function () {
     function colisionTroncoPlataforma() {
         const troncoSuperior = linea.height;
         const plataformaInicial = linea.x + linea.height * Math.cos(linea.angle);
-        console.log(troncoSuperior);
         const plataformaIzquierda = troncos[1].x + (0.2767 * troncos[1].width);             //He sacado el 27,67% en GIMP, dejando fuera la parte del tronco no visible
         const plataformaDerecha = troncos[1].x + (0.8 * troncos[1].width);                  //He sacado el 80% en GIMP, dejando fuera la parte del tronco no visible
-        const plataformaArriba = troncos[1].y;
-        console.log(plataformaIzquierda);
-        console.log(plataformaInicial);
-        console.log(plataformaIzquierda - plataformaInicial);
         if (troncoSuperior >= (plataformaIzquierda - plataformaInicial) && troncoSuperior <= (plataformaDerecha - plataformaInicial)) {
             return true;
         } else {
