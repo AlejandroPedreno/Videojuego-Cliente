@@ -321,31 +321,38 @@ window.onload = function () {
 
     //Dibuja la puntuación actual del jugador
     function dibujarPuntuación() {
+
+        let incremento = 0;                 //Aumenta el tamaño de la barra de puntuación según la puntuación para evitar que se salga del marco
+        if (puntuación >= 100) {
+            incremento = 24;
+        } else if (puntuación >= 10) {
+            incremento = 12;
+        }
         ctx.fillStyle = "lightgrey";
-        ctx.fillRect(15, 15, 166, 26);
+        ctx.fillRect(50, 55, 200 + incremento, 60);
 
         ctx.strokeStyle = "black";
         ctx.lineWidth = 2;
-        ctx.strokeRect(15, 15, 166, 26);
+        ctx.strokeRect(50, 55, 200 + incremento, 60);
 
-        ctx.font = "24px Arial";
+        ctx.font = "30px Arial";
         ctx.fillStyle = "black";
-        ctx.fillText("Puntuación: " + puntuación, 18, 36);
+        ctx.fillText("Puntuación: " + puntuación, 55, 95);
 
     }
 
     //Dibuja las vidas actuales del jugador
     function dibujarVidas() {
-        ctx.font = "18px Arial";
+        ctx.font = "50px Arial";
         ctx.fillStyle = "lightgrey";
-        ctx.fillRect(999, 15, 85, 25);
+        ctx.fillRect(845, 55, 200, 60);
 
         ctx.strokeStyle = "black";
         ctx.lineWidth = 2;
-        ctx.strokeRect(999, 15, 85, 25);
+        ctx.strokeRect(845, 55, 200, 60);
 
         for (let i = 0; i < vidas; i++) {
-            ctx.fillText("❤️", 1000 + i * 30, 33);
+            ctx.fillText("❤️", 850 + i * 60, 100);
         }
     }
 
