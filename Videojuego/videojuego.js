@@ -41,6 +41,7 @@ window.onload = function () {
         this.width = 45;
         this.height = 40;
         this.cruzando = false;  // Indica si el castor está cruzando la línea
+        this.saltando = false;
         this.animacionCastorNormal = [
             [3, 14], [52, 14], [105, 14]     //Posicion normal
         ];
@@ -67,12 +68,14 @@ window.onload = function () {
     const sonidoFondo = document.getElementById("SonidoFondo");
     const sonidoConstruyendo = document.getElementById("SonidoConstruyendo");
     const sonidoExplosion = document.getElementById("SonidoExplosion");
+    const sonidoSalto = document.getElementById("SonidoSalto");
 
     sonidoPasos.playbackRate = 2;
     sonidoFondo.loop = true;
     sonidoFondo.volume = 0.3;
     sonidoConstruyendo.playbackRate = 0.65;
     sonidoConstruyendo.volume = 0.5;
+    sonidoSalto.volume = 0.2;
 
     botonIniciar.onclick = iniciarPartida;
 
@@ -113,7 +116,10 @@ window.onload = function () {
         dibujarBomba();
         verificarColisionBombas();
 
-        if (saltando) {
+        if (castor.saltando) {
+            if(sonidoSalto.paused){
+                iniciarSonido(sonidoSalto);
+            }
             realizarSalto();
             dibujarSaltando();
         }
@@ -520,6 +526,10 @@ window.onload = function () {
         if (castor.cruzando) {
             if (sonidoPasos.paused) {
                 iniciarSonido(sonidoPasos);
+                if(castor.saltando===true){
+                    detenerSonido(sonidoPasos);
+                }
+                
             }
 
             const distanciaRecorrida = 5;
@@ -865,18 +875,18 @@ window.onload = function () {
     idIntervaloBomba = setInterval(animacionBombaExplotando, 1000 / 0.2);
     //Salto
 
-    let saltando = false;
+
     let velocidadSalto = 15;
     let gravedad = 1;
 
 
     document.addEventListener("keydown", (event) => {
-        if (event.code === "Space" && !saltando && juegoIniciado) {
-            saltando = true;
+        if (event.code === "Space" && !castor.saltando && juegoIniciado) {
+            castor.saltando = true;
         }
     });
     function realizarSalto() {
-        if (saltando) {
+        if (castor.saltando) {
 
             castor.y -= velocidadSalto;
             velocidadSalto -= gravedad;
@@ -888,7 +898,7 @@ window.onload = function () {
 
             if (castor.y >= 560) {
                 castor.y = 560;
-                saltando = false;
+                castor.saltando = false;
                 velocidadSalto = 15;
                 posicion = 0;
             }
