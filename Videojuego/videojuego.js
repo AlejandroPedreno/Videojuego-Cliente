@@ -54,7 +54,7 @@ window.onload = function () {
     let idIntervaloConstruyendo;
     let idIntervaloSaltando;
 
-    let idIntervaloBomba;
+    let idIntervaloBomba;              
     let idIntervaloVidasExtra;
 
     let velocidadAngular = 0;    // Velocidad de caída del tronco
@@ -585,7 +585,7 @@ window.onload = function () {
 
             const posicionY = penultimoTronco.y - 10;
 
-            const nuevaBomba = new Bomba(posicionX, posicionY);
+            const nuevaBomba = new Bomba(posicionX, posicionY);             //Hace las bombas más grandes según la puntuación para agregar dificultad al juego
             if (puntuación < 10) {
                 nuevaBomba.width = 20;
                 nuevaBomba.height = 20;
@@ -604,7 +604,7 @@ window.onload = function () {
 
     //Funcion que genera las vidas extra y las almacena en el array de vidas extra
     function generarVidasExtra() {
-        if (Math.random() <= probabilidadVidasExtra) {
+        if (Math.random() <= probabilidadVidasExtra) {              //Genera vidas extra según la probabilidad (10%)
             const ultimoTronco = troncos[troncos.length - 1];
             const penultimoTronco = troncos[troncos.length - 2];
 
@@ -668,7 +668,7 @@ window.onload = function () {
     //Dibuja al castor moviéndose en su posición normal
     function dibujarCastor() {
         iniciarAnimaciónEstática();
-        if (posicion > 2) {
+        if (posicion > 2) {             //Si posicion tiene un valor mayor a 2, se reinicia a 0 para evitar errores
             posicion = 0;
         }
 
@@ -737,7 +737,7 @@ window.onload = function () {
     //Dibuja al castor construyendo
     function dibujarConstruyendo() {
         iniciarAnimaciónConstruyendo();
-        if (posicion == 0) {
+        if (posicion == 0) {            //Depende de la posición del sprite, tiene un tamaño u otro
             castor.width = 44;
             castor.height = 38;
         } else if (posicion == 1) {
@@ -927,11 +927,11 @@ window.onload = function () {
             castor.y -= velocidadSalto;
             velocidadSalto -= gravedad;
 
-            if (velocidadSalto <= 0) {
+            if (velocidadSalto <= 0) {          //Si la velocidad de salto es menor o igual a 0, el castor empieza a caer
                 velocidadSalto -= gravedad;
             }
 
-            if (castor.y >= 560) {
+            if (castor.y >= 560) {              //El castor deja de caer cuando llega al suelo
                 castor.y = 560;
                 castor.saltando = false;
                 velocidadSalto = 15;
@@ -975,7 +975,6 @@ window.onload = function () {
                 castor.y + castor.height > bomba.y) {
                 iniciarSonido(sonidoExplosion);
                 bomba.explotando = true;
-
             }
         });
     }
@@ -986,7 +985,7 @@ window.onload = function () {
                 castor.x + castor.width > vidasExtra.x &&
                 castor.y < vidasExtra.y + vidasExtra.height &&
                 castor.y + castor.height > vidasExtra.y) {
-                if (vidas < 3) {
+                if (vidas < 3) {                        //Solo puede tener un máximo de 3 vidas
                     vidas++;
                 }
                 iniciarSonido(sonidoVidaExtra);
