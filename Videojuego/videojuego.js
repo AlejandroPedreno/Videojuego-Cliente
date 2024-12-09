@@ -1,25 +1,50 @@
 window.onload = function () {
+
     //VARIABLES GLOBALES
+
+    // Elementos del DOM
+
     const canvas = document.getElementById("miCanvas");
     const ctx = canvas.getContext("2d");
 
+    const pantallaOpacidad = document.getElementById("overlay");
+    const botonIniciar = document.getElementById("Iniciarpartida");
+    const sonidoPasos = document.getElementById("Pasos");
+    const sonidoFondo = document.getElementById("SonidoFondo");
+    const sonidoConstruyendo = document.getElementById("SonidoConstruyendo");
+    const sonidoExplosion = document.getElementById("SonidoExplosion");
+    const sonidoSalto = document.getElementById("SonidoSalto");
+    const sonidoVidaExtra = document.getElementById("SonidoVida");
+
+    // Configuración de sonidos
+    sonidoPasos.playbackRate = 2;
+    sonidoFondo.loop = true;
+    sonidoFondo.volume = 0.3;
+    sonidoConstruyendo.playbackRate = 0.65;
+    sonidoConstruyendo.volume = 0.5;
+    sonidoSalto.volume = 0.2;
+
+    // Imágenes del juego
     const fondo = new Image();
     const spriteCastor = new Image();
     const tronco = new Image();
-
-    const troncos = [];
 
     fondo.src = "Assets/Images/Fondo_prueba.avif";
     spriteCastor.src = "Assets/Images/sprite-castor.png";
     tronco.src = "Assets/Images/Tronco.png";
 
+    let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
+
+    // Anchura y altura de la imagen del tronco que genera el jugador
+    tronco.width = 30;
+    tronco.height = 50;
+
+    // Parámetros del juego
     let vidas = 3;
     let puntuación = 0;
     let juegoIniciado = false;
-    let x = 100;                  // Posición inicial del castor
-    let y = 570;
-    let posicion = 0;
-    let castor;
+
+    //Intervalos de animación del castor
     let intervaloEstático = false;
     let intervaloCaminando = false;
     let intervaloConstruyendo = false;
@@ -28,13 +53,49 @@ window.onload = function () {
     let idIntervaloCaminando;
     let idIntervaloConstruyendo;
     let idIntervaloSaltando;
-    let velocidadAngular = 0;
-    let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
 
-    // Parámetros del tronco generado por el jugador
-    let linea = { x: 0, y: 600, height: 0, angle: 0, creciendo: false, cayendo: false };
+    let idIntervaloBomba;
+    let idIntervaloVidasExtra;
 
-    // Parámetros del castor
+    let velocidadAngular = 0;    // Velocidad de caída del tronco
+    let linea = { x: 0, y: 600, height: 0, angle: 0, creciendo: false, cayendo: false };    // Parámetros del tronco que genera el jugador
+
+    const troncos = [];         //Array donde se almacenan todas las plataformas
+
+    //Variables del castor
+    let castor;
+    let x = 100;
+    let y = 570;
+    let posicion = 0;
+
+    // Parámetros de la bomba
+    let bomba;
+    let probabilidadBomba = 0;
+    let x_Bomba = 0;
+    let y_Bomba = 0;
+    let posicionBomba = 0;
+    let posicionExplosion = 0;
+    let anchoCanvas = 0;
+    let altoCanvas = 0;
+    const bombas = [];                  //Array donde se almacenan todas las bombas
+
+    //Variables de las vidas extra
+    let x_VidasExtra = 110;
+    let y_VidasExtra = 450;
+    let vidasExtra;
+    let probabilidadVidasExtra = 0.1;
+    let posicionSpriteVidasExtra = 0;
+    const vidasExtraArray = [];         //Array donde se almacenan todas las vidas extra
+
+    //Variables de salto
+    let velocidadSalto = 15;
+    let gravedad = 1;
+    let cooldown = 1100;                //Tiempo de espera entre saltos
+    let puedeSaltar = true;
+
+    //CLASES
+
+    // Clase Castor
     function Castor(x_, y_) {
         this.x = x_;
         this.y = y_;
@@ -56,58 +117,40 @@ window.onload = function () {
         ]
     }
 
-    tronco.width = 30;
-    tronco.height = 50;
+    // Clase Bomba
+    function Bomba(x_, y_) {
+        this.x = x_;
+        this.y = y_;
+        this.width = 12;
+        this.height = 12;
+        this.animacionBomba = [
+            [33, 99], [134, 95]
+        ];
+        this.animacionExplosion = [
+            [33, 99], [134, 95], [235, 68], [383, 50], [571, 30], [820, 70]
+        ];
 
-
-    //REFERENCIAS A HTML
-
-    const pantallaOpacidad = document.getElementById("overlay");
-    const botonIniciar = document.getElementById("Iniciarpartida");
-    const sonidoPasos = document.getElementById("Pasos");
-    const sonidoFondo = document.getElementById("SonidoFondo");
-    const sonidoConstruyendo = document.getElementById("SonidoConstruyendo");
-    const sonidoExplosion = document.getElementById("SonidoExplosion");
-    const sonidoSalto = document.getElementById("SonidoSalto");
-    const sonidoVidaExtra = document.getElementById("SonidoVida");
-
-    sonidoPasos.playbackRate = 2;
-    sonidoFondo.loop = true;
-    sonidoFondo.volume = 0.3;
-    sonidoConstruyendo.playbackRate = 0.65;
-    sonidoConstruyendo.volume = 0.5;
-    sonidoSalto.volume = 0.2;
-
-    botonIniciar.onclick = iniciarPartida;
-
-    fondo.onload = function () {
-        dibujarFondo();
-    };
-
-    function iniciarSonido(sonido) {
-        sonido.currentTime = 0;
-        sonido.play();
+        this.explotando = false;
+        this.cuadroActual = 0;
+        this.ultimoTiempo = Date.now();
+        this.sonidoReproducido = false;
     }
 
-    function detenerSonido(sonido) {
-        sonido.pause();
-        sonido.currentTime = 0;
+    // Clase Vidas Extra
+    function VidasExtra(x_, y_) {
+        this.x = x_;
+        this.y = y_;
+        this.width = 25;
+        this.height = 25;
+        this.spriteVidasExtra = [
+            [17, 25], [186, 27], [354, 25], [522, 25], [691, 25], [57, 188], [198, 187], [354, 187], [509, 187], [665, 188] //w: 115 h: 110
+        ];
     }
 
 
     //FUNCIONES
 
-    function iniciarPartida() {                    //Inicia la partida  
-        iniciarSonido(sonidoFondo);
-
-        juegoIniciado = true;
-        botonIniciar.style.visibility = "hidden";
-        pantallaOpacidad.style.visibility = "hidden";
-        crearPlataformas();
-        linea.x = troncos[0].x + troncos[0].width;
-        gameLoop();
-    }
-
+    // Bucle principal del juego
     function gameLoop() {
         if (!juegoIniciado) return;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -140,7 +183,21 @@ window.onload = function () {
             console.log(bombas[0].explotando);
         }
     }
-    function finPartida() {                            //Finaliza la partida                                
+
+    //Funcion para iniciar la partida
+    function iniciarPartida() {
+        iniciarSonido(sonidoFondo);
+
+        juegoIniciado = true;
+        botonIniciar.style.visibility = "hidden";
+        pantallaOpacidad.style.visibility = "hidden";
+        crearPlataformas();
+        linea.x = troncos[0].x + troncos[0].width;
+        gameLoop();
+    }
+
+    //Función para finalizar la partida
+    function finPartida() {
         detenerSonido(sonidoFondo);
         botonIniciar.style.visibility = "visible";
         pantallaOpacidad.style.visibility = "visible";
@@ -174,7 +231,21 @@ window.onload = function () {
         intervaloSaltando = false;
     }
 
-    function actualizarLeaderboard(nuevaPuntuacion) {                   //Actualiza el marcador         
+    //Funciones de reproducción del sonido
+    function iniciarSonido(sonido) {
+        sonido.currentTime = 0;
+        sonido.play();
+    }
+
+    function detenerSonido(sonido) {
+        sonido.pause();
+        sonido.currentTime = 0;
+    }
+
+    //Funciones de la tabla de puntuaciones
+
+    //Actualiza el marcador
+    function actualizarLeaderboard(nuevaPuntuacion) {
         leaderboard.push(nuevaPuntuacion);
 
         leaderboard.sort((a, b) => b - a);
@@ -186,6 +257,7 @@ window.onload = function () {
         mostrarLeaderboard();
     }
 
+    //Muestra el marcador
     function mostrarLeaderboard() {                                          //Muestra el marcador            
         const leaderboardUl = document.getElementById("leaderboard");
         leaderboardUl.innerHTML = "";
@@ -203,15 +275,57 @@ window.onload = function () {
     }
 
 
-    //DIBUJAR
+    //Animación de caída del tronco generado por el jugador
+    function animarCaida() {
+        const factorAceleracion = 1.05;
+        if (linea.angle < Math.PI / 2) {
+            velocidadAngular *= factorAceleracion;
+            linea.angle += velocidadAngular;
+            requestAnimationFrame(animarCaida);
+        } else {
+            linea.angle = Math.PI / 2;
+            verificarCruce();
+        }
+    }
 
-    function dibujarFondo() {                                   //Dibuja el fondo del juego
+    function verificarCruce() {                             //Comprueba si el tronco generado cae encima de la siguiente plataforma
+        let vericidad = colisionTroncoPlataforma();
+        if (vericidad == true) {
+            console.log(colisionTroncoPlataforma());
+            permitirPasoCastor();
+        } else {
+            vidas--;
+            if (vidas <= 0) finPartida();
+            else reiniciarLinea();
+        }
+    }
+
+    function reiniciarLinea() {         //La linea que genera el jugador vuelve a su posición inicial
+        linea.height = 0;
+        linea.angle = 0;
+        linea.creciendo = false;
+        linea.cayendo = false;
+    }
+
+    //Funcion que es llamada cuando se le permite el paso al castor
+    function permitirPasoCastor() {
+        castor.cruzando = true;
+        puntuación++;
+
+        // Espera a que termine de cruzar antes de mover el escenario
+        setTimeout(() => {
+            moverEscenario();
+        }, 750);
+    }
+
+    //FUNCIONES DIBUJAR
+    //Dibuja el fondo del juego
+    function dibujarFondo() {
         ctx.drawImage(fondo, 0, 0, canvas.width, canvas.height);
     }
 
-    function dibujarPuntuación() {                              //Dibuja la puntuación del jugador
-
-
+    //Dibuja la puntuación actual del jugador
+    function dibujarPuntuación() {
         ctx.fillStyle = "lightgrey";
         ctx.fillRect(15, 15, 166, 26);
 
@@ -225,7 +339,8 @@ window.onload = function () {
 
     }
 
-    function dibujarVidas() {                        //Dibuja las vidas del jugador     
+    //Dibuja las vidas actuales del jugador
+    function dibujarVidas() {
         ctx.font = "18px Arial";
         ctx.fillStyle = "lightgrey";
         ctx.fillRect(999, 15, 85, 25);
@@ -239,7 +354,8 @@ window.onload = function () {
         }
     }
 
-    function dibujarPlataformas() {                     //Dibuja las plataformas
+    //Dibuja las plataformas
+    function dibujarPlataformas() {
 
         troncos.forEach((plataforma) => {
             ctx.drawImage(
@@ -252,21 +368,8 @@ window.onload = function () {
         });
     }
 
-    function animarCaida() {                        //Animación de caída del tronco generado por el jugador
-        const factorAceleracion = 1.05;
-        if (linea.angle < Math.PI / 2) {
-            velocidadAngular *= factorAceleracion;
-            linea.angle += velocidadAngular;
-            requestAnimationFrame(animarCaida);
-        } else {
-            linea.angle = Math.PI / 2;
-            verificarCruce();
-        }
-    }
-
-    velocidadAngular += 0.01 * Math.pow(linea.angle, 2);            //Aumenta la velocidad de caída del tronco
-
-    function dibujarLinea() {                       //Dibuja la linea que genera el jugador
+    //Dibuja la linea que genera el jugador
+    function dibujarLinea() {
         if (linea.creciendo) {
 
             colisionTroncoTecho();
@@ -291,103 +394,279 @@ window.onload = function () {
         ctx.restore();
     }
 
-    //ANIMACIONES
+    //Funcion para dibujar las bombas
+    function dibujarBomba() {
+        bombas.forEach((bomba, index) => {
+            if (!bomba.explotando) {                                         // Dibuja bomba normal
+                if (posicionBomba == 0) {                                    //Según la posición del sprite, tiene un tamaño u otro
+                    anchoCanvas = 66;
+                    altoCanvas = 63;
+                    if (puntuación < 10) {
+                        bomba.width = 20;
+                        bomba.height = 20;
+                    } else if (puntuación > 10 && puntuación < 20) {
+                        bomba.width = 25;
+                        bomba.height = 25;
+                    } else {
+                        bomba.width = 30;
+                        bomba.height = 30;
+                    }
+                } else if (posicionBomba == 1) {
+                    anchoCanvas = 75;
+                    altoCanvas = 70;
+                    if (puntuación < 10) {
+                        bomba.width = 22;
+                        bomba.height = 22;
+                    } else if (puntuación > 10 && puntuación < 20) {
+                        bomba.width = 27;
+                        bomba.height = 27;
+                    } else {
+                        bomba.width = 33;
+                        bomba.height = 33;
+                    }
+                }
+                ctx.drawImage(
+                    bomba.imagen,
+                    bomba.animacionBomba[posicionBomba][0],
+                    bomba.animacionBomba[posicionBomba][1],
+                    anchoCanvas,
+                    altoCanvas,
+                    bomba.x,
+                    bomba.y - bomba.height,
+                    bomba.width,
+                    bomba.height
+                );
+            } else {                                                            //Animacion de bomba explotando
+                if (bomba.cuadroActual === 0 && !bomba.sonidoReproducido) {
+                    iniciarSonido(sonidoExplosion);
+                    bomba.sonidoReproducido = true;
+                }
+                let cuadro = bomba.cuadroActual;
+                let anchoCanvas = 200;
+                let altoCanvas = 200;
 
-    //Valores según la longitud de cada sprite
+                ctx.drawImage(
+                    bomba.imagen,
+                    bomba.animacionExplosion[cuadro][0],
+                    bomba.animacionExplosion[cuadro][1],
+                    anchoCanvas,
+                    altoCanvas,
+                    bomba.x,
+                    bomba.y - bomba.height,
+                    bomba.width,
+                    bomba.height
+                );
 
-    function animacionEstática() {
-        posicion = (posicion + 1) % castor.animacionCastorNormal.length;
-    }
+                if (Date.now() - bomba.ultimoTiempo > 150) {        // Velocidad en la que cambia el sprite de la explosión de la bomba
+                    bomba.cuadroActual++;
+                    bomba.ultimoTiempo = Date.now();
+                }
 
-    function animacionCaminando() {
-        posicion = (posicion + 1) % castor.animacionCastorCaminando.length;
-    }
-
-    function animacionConstruyendo() {
-        posicion = (posicion + 1) % castor.animacionCastorConstruyendo.length;
-    }
-
-    function animacionSaltando() {
-        posicion = (posicion + 1) % castor.animacionCastorSaltando.length;
-    }
-
-    function iniciarAnimaciónEstática() {               //Inicia la animación del castor en su posición normal
-        if (!intervaloEstático) {
-            if (idIntervaloCaminando) {
-                clearInterval(idIntervaloCaminando);
+                if (bomba.cuadroActual >= bomba.animacionExplosion.length) {       // Elimina la bomba del array cuando termina la animación
+                    vidas--;
+                    bombas.splice(index, 1);
+                    if (vidas <= 0) finPartida();
+                }
             }
-            if (idIntervaloConstruyendo) {
-                clearInterval(idIntervaloConstruyendo);
+        });
+    }
+
+    //Funcion para dibujar las vidas extra
+    function dibujarVidasExtra() {
+        vidasExtraArray.forEach((vidasExtra, index) => {
+            anchoCanvas = 115;
+            altoCanvas = 110;
+            vidasExtra.width = 20;
+            vidasExtra.height = 20;
+            vidasExtra.y = 450;
+            console.log(vidasExtraArray[0].y);
+            ctx.drawImage(
+                vidasExtra.imagen,
+                vidasExtra.spriteVidasExtra[posicionSpriteVidasExtra][0],
+                vidasExtra.spriteVidasExtra[posicionSpriteVidasExtra][1],
+                anchoCanvas,
+                altoCanvas,
+                vidasExtra.x,
+                vidasExtra.y,
+                vidasExtra.width,
+                vidasExtra.height
+            );
+        }
+        )
+    };
+
+
+    //FUNCIONES DE MOVIMIENTO
+    //Funcion que desplaza al castor
+    function moverCastor() {
+        if (castor.cruzando) {
+            if (sonidoPasos.paused) {
+                iniciarSonido(sonidoPasos);
+                if (castor.saltando === true) {
+                    detenerSonido(sonidoPasos);
+                }
             }
-            if (idIntervaloSaltando) {
-                clearInterval(idIntervaloSaltando);
+            const distanciaRecorrida = 5;
+            castor.x += distanciaRecorrida;
+            if (castor.x >= troncos[1].x + troncos[1].width / 2 - castor.width / 2) {
+                castor.cruzando = false;
+                moverPlataformas(distanciaRecorrida);
+                detenerSonido(sonidoPasos);
             }
-            intervaloEstático = true;
-            intervaloCaminando = false;
-            intervaloConstruyendo = false;
-            intervaloSaltando = false;
-            idIntervaloEstático = setInterval(animacionEstática, 1000 / 8);
         }
     }
 
-    function iniciarAnimaciónCaminando() {              //Inicia la animación del castor caminando
-        if (!intervaloCaminando) {
-            if (idIntervaloEstático) {
-                clearInterval(idIntervaloEstático);
+    // Funcion que mueve todas las plataformas hacia la izquierda según la distancia recorrida y elimina la primera plataforma
+    function moverPlataformas(distanciaRecorrida) {
+        troncos.forEach(tronco => {
+            tronco.x -= distanciaRecorrida;
+        });
+        bombas.forEach(bomba => {
+            bomba.x -= distanciaRecorrida;
+        });
+        vidasExtraArray.forEach(vidasExtra => {
+            vidasExtra.x -= distanciaRecorrida;
+        });
+        troncos.shift();
+        let ancho = 0;
+        // Genera un nuevo tronco al final del array
+        if (puntuación < 25) {                         //Al llegar a 25 puntos los troncos se generan más finos para aumentar la dificultad del juego
+            ancho = Math.random() * 100 + 50;
+        } else {
+            ancho = Math.random() * 10 + 50;
+        }
+        let xPos = troncos[troncos.length - 1].x + troncos[troncos.length - 1].width + Math.random() * 100 + 50;
+        troncos.push({ x: xPos, y: 600, width: ancho, height: 200 });
+
+        castor.x = troncos[0].x + troncos[0].width / 2 - castor.width / 2;
+
+        // Tras conseguir un punto, se empiezan a generar bombas al final del array de plataformas
+        if (puntuación >= 1) {
+            actualizarProbabilidadBomba();
+            generarBomba();
+        }
+        generarVidasExtra();    //Genera vidas extra tras mover las plataformas
+        reiniciarLinea();       //Reinicia la línea que genera el jugador
+    }
+
+    //FUNCIONES GENERADORAS
+    //Funcion que crea las plataformas y las almacena en el array de troncos
+    function crearPlataformas() {
+        for (let i = 0; i < 8; i++) {
+            let ancho = Math.random() * 100 + 50;
+            let distanciaMinima = 120;
+            let distanciaMaxima = 200;
+            let lastTronco = troncos[troncos.length - 1];
+            let distanciaAleatoria = Math.random() * (distanciaMaxima - distanciaMinima) + distanciaMinima;
+            let xPos;                   // Posición x de la primera pltaforma   
+
+            if (i === 0) {              //La primera plataforma se encuentra en x=50
+                xPos = 50;
+            } else {
+                xPos = lastTronco.x + lastTronco.width + distanciaAleatoria;
             }
-            if (idIntervaloConstruyendo) {
-                clearInterval(idIntervaloConstruyendo);
+
+            troncos.push({ x: xPos, y: 600, width: ancho, height: 200 });
+        }
+
+        // Castor sobre la primera plataforma
+        castor.x = troncos[0].x + troncos[0].width / 2 - castor.width / 2;
+        castor.y = troncos[0].y - castor.height;
+    }
+
+    //Funcion que genera las bombas y las almacena en el array de bombas
+    function generarBomba() {
+        if (Math.random() < probabilidadBomba) {
+            const ultimoTronco = troncos[troncos.length - 1];
+            const penultimoTronco = troncos[troncos.length - 2];
+
+            // Calcula posición entre el penúltimo y último tronco
+            const posicionX = ((penultimoTronco.x + penultimoTronco.width * 0.53835) - bomba.width / 2) + (((ultimoTronco.x + ultimoTronco.width * 0.53835) - bomba.width / 2) - ((penultimoTronco.x + penultimoTronco.width * 0.53835) - bomba.width / 2)) / 2;
+
+            const posicionY = penultimoTronco.y - 10;
+
+            const nuevaBomba = new Bomba(posicionX, posicionY);
+            if (puntuación < 10) {
+                nuevaBomba.width = 20;
+                nuevaBomba.height = 20;
+            } else if (puntuación > 10 && puntuación < 20) {
+                nuevaBomba.width = 25;
+                nuevaBomba.height = 25;
+            } else if (puntuación > 20) {
+                nuevaBomba.width = 30;
+                nuevaBomba.height = 30;
             }
-            if (idIntervaloSaltando) {
-                clearInterval(idIntervaloSaltando);
-            }
-            intervaloCaminando = true;
-            intervaloEstático = false;
-            intervaloConstruyendo = false;
-            intervaloSaltando = false;
-            idIntervaloCaminando = setInterval(animacionCaminando, 1000 / 24);
+
+            bombas.push(nuevaBomba);
+            console.log("Bomba generada en:", posicionX, posicionY);
         }
     }
 
-    function iniciarAnimaciónConstruyendo() {               //Inicia la animación del castor construyendo
-        if (!intervaloConstruyendo) {
-            if (idIntervaloEstático) {
-                clearInterval(idIntervaloEstático);
-            }
-            if (idIntervaloCaminando) {
-                clearInterval(idIntervaloCaminando);
-            }
-            if (idIntervaloSaltando) {
-                clearInterval(idIntervaloSaltando);
-            }
-            intervaloConstruyendo = true;
-            intervaloCaminando = false;
-            intervaloEstático = false;
-            intervaloSaltando = false;
-            idIntervaloConstruyendo = setInterval(animacionConstruyendo, 1000 / 10);
+    //Funcion que genera las vidas extra y las almacena en el array de vidas extra
+    function generarVidasExtra() {
+        if (Math.random() <= probabilidadVidasExtra) {
+            const ultimoTronco = troncos[troncos.length - 1];
+            const penultimoTronco = troncos[troncos.length - 2];
+
+            // Calcula posición entre el penúltimo y último tronco
+            const posicionX = ((penultimoTronco.x + penultimoTronco.width * 0.53835) - vidasExtra.width / 2) + (((ultimoTronco.x + ultimoTronco.width * 0.53835) - vidasExtra.width / 2) - ((penultimoTronco.x + penultimoTronco.width * 0.53835) - vidasExtra.width / 2)) / 2;
+
+            const posicionY = penultimoTronco.y - 10;
+
+            const nuevaVidasExtra = new VidasExtra(posicionX, posicionY);
+
+            vidasExtraArray.push(nuevaVidasExtra);
+            console.log("Vida generada en:", posicionX, posicionY);
         }
     }
 
-    function iniciarAnimaciónSaltando() {               //Inicia la animación del castor saltando
-        if (!intervaloSaltando) {
-            if (idIntervaloEstático) {
-                clearInterval(idIntervaloEstático);
+    //Funcion que mueve todos los elementos del escenario a la izquierda
+    function moverEscenario() {
+        const velocidad = 5;
+        const intervalo = setInterval(() => {
+
+            // Mueve las plataformas hacia la izquierda
+            troncos.forEach(tronco => {
+                tronco.x -= velocidad;
+            });
+
+            // Mueve el tronco generado por el jugador hacia la izquierda
+            linea.x -= velocidad;
+
+            // Mueve el castor hacia la izquierda
+            castor.x -= velocidad;
+
+            //Mueve las bombas hacia la izquierda
+            bombas.forEach((bomba, index) => {
+                bomba.x -= velocidad;
+
+                // Elimina bombas fuera del escenario
+                if (bomba.x + bomba.width < 0) {
+                    bombas.splice(index, 1);
+                }
+            });
+
+            // Mueve las vidas extra hacia la izquierda
+            vidasExtraArray.forEach((vidasExtra, index) => {
+                vidasExtra.x -= velocidad;
+
+                // Elimina las vidas extra fuera del escenario
+                if (vidasExtra.x + vidasExtra.width < 0) {
+                    vidasExtraArray.splice(index, 1);
+                }
+            });
+
+            // Si el castor llega a su posición inicial deja de moverse el escenario
+            if (castor.x <= 100) {
+                castor.x = 100;
+                clearInterval(intervalo);
             }
-            if (idIntervaloCaminando) {
-                clearInterval(idIntervaloCaminando);
-            }
-            if (idIntervaloConstruyendo) {
-                clearInterval(idIntervaloConstruyendo);
-            }
-            intervaloSaltando = true;
-            intervaloEstático = false;
-            intervaloCaminando = false;
-            intervaloConstruyendo = false;
-            idIntervaloSaltando = setInterval(animacionSaltando, 1000 / 6);
-        }
+        }, 16);
     }
 
-    function dibujarCastor() {                      //Dibuja al castor moviéndose en su posición normal
+    //FUNCIONES DE LOS MOVIMIENTOS DEL CASTOR
+    //Dibuja al castor moviéndose en su posición normal
+    function dibujarCastor() {
         iniciarAnimaciónEstática();
         if (posicion > 2) {
             posicion = 0;
@@ -412,9 +691,10 @@ window.onload = function () {
             castor.y + 3,
             castor.width,
             castor.height);
-
     }
-    function dibujarCaminando() {                           //Dibuja al castor caminando
+
+    //Dibuja al castor caminando
+    function dibujarCaminando() {
         iniciarAnimaciónCaminando();
         if (posicion == 0) {
             castor.width = 49;
@@ -454,7 +734,8 @@ window.onload = function () {
         }
     }
 
-    function dibujarConstruyendo() {                    //Dibuja al castor construyendo
+    //Dibuja al castor construyendo
+    function dibujarConstruyendo() {
         iniciarAnimaciónConstruyendo();
         if (posicion == 0) {
             castor.width = 44;
@@ -481,9 +762,11 @@ window.onload = function () {
                 castor.height);
         }
     }
+
+    //Dibuja al castor saltando
     function dibujarSaltando() {
         iniciarAnimaciónSaltando();
-        if (posicion == 0) {                     //h:47 w:46 ; h:52 w:31 ; h:48 w:36 ; h:33 w:48 ; h:43 w:48 ; h:53 w:33; h:41 w:45; h:38 w:48
+        if (posicion == 0) {
             castor.width = 46;
             castor.height = 47;
         } else if (posicion == 1) {
@@ -522,392 +805,122 @@ window.onload = function () {
 
     }
 
-    //MOVIMIENTO
-    function moverCastor() {
-        if (castor.cruzando) {
-            if (sonidoPasos.paused) {
-                iniciarSonido(sonidoPasos);
-                if (castor.saltando === true) {
-                    detenerSonido(sonidoPasos);
-                }
+    //FUNCIONES ANIMACIONES
 
-            }
-
-            const distanciaRecorrida = 5;
-            castor.x += distanciaRecorrida;
-            if (castor.x >= troncos[1].x + troncos[1].width / 2 - castor.width / 2) {
-                castor.cruzando = false;
-                moverPlataformas(distanciaRecorrida);
-                detenerSonido(sonidoPasos);
-            }
-        }
+    //Valores según la longitud de cada sprite:
+    //Animaciones del castor
+    function animacionEstática() {
+        posicion = (posicion + 1) % castor.animacionCastorNormal.length;
     }
-
-    function moverPlataformas(distanciaRecorrida) {
-        // Mover todos los troncos hacia la izquierda por la distancia recorrida y elimina el primer tronco
-        troncos.forEach(tronco => {
-            tronco.x -= distanciaRecorrida;
-        });
-        bombas.forEach(bomba => {
-            bomba.x -= distanciaRecorrida;
-        });
-        vidasExtraArray.forEach(vidasExtra => {
-            vidasExtra.x -= distanciaRecorrida;
-        });
-        troncos.shift();
-
-        // Genera un nuevo tronco al final del array
-        let ancho = Math.random() * 100 + 50;
-        let xPos = troncos[troncos.length - 1].x + troncos[troncos.length - 1].width + Math.random() * 100 + 50;
-        troncos.push({ x: xPos, y: 600, width: ancho, height: 200 });
-
-        castor.x = troncos[0].x + troncos[0].width / 2 - castor.width / 2;
-        if (puntuación >= 1) {
-            actualizarProbabilidadBomba();
-            generarBomba();
-        }
-        generarVidasExtra();
-        reiniciarLinea();
+    function animacionCaminando() {
+        posicion = (posicion + 1) % castor.animacionCastorCaminando.length;
     }
-
-
-    //OTRAS FUNCIONES
-
-    function verificarCruce() {                             //Comprueba si el tronco generado cae encima de la siguiente plataforma
-        let vericidad = colisionTroncoPlataforma();
-        if (vericidad == true) {
-            console.log(colisionTroncoPlataforma());
-            permitirPasoCastor();
-        } else {
-            vidas--;
-            if (vidas <= 0) finPartida();
-            else reiniciarLinea();
-        }
+    function animacionConstruyendo() {
+        posicion = (posicion + 1) % castor.animacionCastorConstruyendo.length;
     }
-
-    function reiniciarLinea() {         //La linea que genera el jugador vuelve a su posición inicial
-        linea.height = 0;
-        linea.angle = 0;
-        linea.creciendo = false;
-        linea.cayendo = false;
+    function animacionSaltando() {
+        posicion = (posicion + 1) % castor.animacionCastorSaltando.length;
     }
-
-    function permitirPasoCastor() {
-        castor.cruzando = true;
-        puntuación++;
-
-        // Espera a que termine de cruzar antes de mover el escenario
-        setTimeout(() => {
-            moverEscenario();
-        }, 500);
-    }
-
-    function crearPlataformas() {
-        for (let i = 0; i < 8; i++) {
-            let ancho = Math.random() * 100 + 50;
-            let distanciaMinima = 120;
-            let distanciaMaxima = 200;
-            let lastTronco = troncos[troncos.length - 1];
-            let distanciaAleatoria = Math.random() * (distanciaMaxima - distanciaMinima) + distanciaMinima;
-            let xPos;           // Posición x de la primera pltaforma   
-
-            if (i === 0) {
-                xPos = 50;
-            } else {
-                xPos = lastTronco.x + lastTronco.width + distanciaAleatoria;
-            }
-
-            troncos.push({ x: xPos, y: 600, width: ancho, height: 200 });
-        }
-
-        // Castor sobre la primera plataforma
-        castor.x = troncos[0].x + troncos[0].width / 2 - castor.width / 2;
-        castor.y = troncos[0].y - castor.height;
-    }
-
-    function moverEscenario() {
-        const velocidad = 5;
-        const intervalo = setInterval(() => {
-
-            // Mueve las plataformas hacia la izquierda
-
-            troncos.forEach(tronco => {
-                tronco.x -= velocidad;
-            });
-
-            // Mueve el tronco hacia la izquierda
-            linea.x -= velocidad;
-
-            // Mueve el castor hacia la izquierda
-            castor.x -= velocidad;
-
-            bombas.forEach((bomba, index) => {
-                bomba.x -= velocidad;
-
-                // Eliminar bombas fuera del escenario
-                if (bomba.x + bomba.width < 0) {
-                    bombas.splice(index, 1);
-                }
-            });
-            vidasExtraArray.forEach((vidasExtra, index) => {
-                vidasExtra.x -= velocidad;
-
-                // Eliminar bombas fuera del escenario
-                if (vidasExtra.x + vidasExtra.width < 0) {
-                    vidasExtraArray.splice(index, 1);
-                }
-            });
-
-            // Si el castor llega a su posición inicial deja de moverse el escenario
-            if (castor.x <= 100) {
-                castor.x = 100;
-                clearInterval(intervalo);
-            }
-        }, 16);
-    }
-
-
-    //EVENTOS
-    canvas.addEventListener("mousedown", () => {            //Cuando se pulsa el ratón se genera un tronco hacia arriba
-        if (juegoIniciado && !linea.cayendo) {
-            iniciarSonido(sonidoConstruyendo);
-            linea.creciendo = true;
-        }
-    });
-
-    canvas.addEventListener("mouseup", () => {              //Cuando se deja de pulsar el ratón el tronco deja de crecer y cae hacia la derecha
-        if (juegoIniciado && linea.creciendo) {
-            detenerSonido(sonidoConstruyendo);
-            linea.creciendo = false;
-            linea.cayendo = true;
-            velocidadAngular = Math.PI / 160;
-            requestAnimationFrame(animarCaida);
-        }
-    });
-
-
-    //COLISIONES
-
-    function colisionTroncoPlataforma() {
-        const troncoSuperior = linea.height;
-        const plataformaInicial = linea.x + linea.height * Math.cos(linea.angle);
-        console.log(troncoSuperior);
-        const plataformaIzquierda = troncos[1].x + (0.2767 * troncos[1].width);             //He sacado el 27,67% en GIMP, dejando fuera la parte del tronco no visible
-        const plataformaDerecha = troncos[1].x + (0.8 * troncos[1].width);                  //He sacado el 80% en GIMP, dejando fuera la parte del tronco no visible
-        const plataformaArriba = troncos[1].y;
-        console.log(plataformaIzquierda);
-        console.log(plataformaInicial);
-        console.log(plataformaIzquierda - plataformaInicial);
-        if (troncoSuperior >= (plataformaIzquierda - plataformaInicial) && troncoSuperior <= (plataformaDerecha - plataformaInicial)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-    function colisionTroncoTecho() {
-        if (linea.y - linea.height <= 0) {
-            linea.creciendo = false;
-            linea.cayendo = true;
-
-            velocidadAngular = Math.PI / 160;
-            requestAnimationFrame(animarCaida);
-        }
-    }
-
-
-    //INICIALIZACIÓN
-
-    imagen = new Image();
-    imagen.src = "Assets/Images/sprite-castor.png";
-    Castor.prototype.imagen = imagen;
-    castor = new Castor(x, y);
-    mostrarLeaderboard();
-
-
-    //BOMBA
-
-    // Parámetros de la bomba
-
-    const bombas = [];
-    let bomba;
-    let probabilidadBomba = 0;
-    let x_Bomba = 0;
-    let y_Bomba = 0;
-    let posicionBomba = 0;
-    let posicionExplosion = 0;
-    let anchoCanvas = 0;
-    let altoCanvas = 0;
-
-    function Bomba(x_, y_) {
-        this.x = x_;
-        this.y = y_;
-        this.width = 12;
-        this.height = 12;
-        this.animacionBomba = [
-            [33, 99], [134, 95]
-        ];
-        this.animacionExplosion = [
-            [33, 99], [134, 95], [235, 68], [383, 50], [571, 30], [820, 70]
-        ];
-
-        this.explotando = false;
-        this.cuadroActual = 0;
-        this.ultimoTiempo = Date.now();
-        this.sonidoReproducido = false;
-    }
-
+    //Animaciones de las bombas
     function animacionBombaEstatica() {
         posicionBomba = (posicionBomba + 1) % bomba.animacionBomba.length;
     }
     function animacionBombaExplotando() {
         posicionExplosion = (posicionExplosion + 1) % bomba.animacionExplosion.length;
     }
-    function dibujarBomba() {
-        bombas.forEach((bomba, index) => {
-            if (!bomba.explotando) {                // Dibuja bomba normal
-                if (posicionBomba == 0) {
-                    anchoCanvas = 66;
-                    altoCanvas = 63;
-                    if (puntuación < 10) {
-                        bomba.width = 20;
-                        bomba.height = 20;
-                    } else if (puntuación > 10 && puntuación < 20) {
-                        bomba.width = 25;
-                        bomba.height = 25;
-                    } else {
-                        bomba.width = 30;
-                        bomba.height = 30;
-                    }
-                } else if (posicionBomba == 1) {
-                    anchoCanvas = 75;
-                    altoCanvas = 70;
-                    if (puntuación < 10) {
-                        bomba.width = 22;
-                        bomba.height = 22;
-                    } else if (puntuación > 10 && puntuación < 20) {
-                        bomba.width = 27;
-                        bomba.height = 27;
-                    } else {
-                        bomba.width = 33;
-                        bomba.height = 33;
-                    }
-                }
-                ctx.drawImage(
-                    bomba.imagen,
-                    bomba.animacionBomba[posicionBomba][0],
-                    bomba.animacionBomba[posicionBomba][1],
-                    anchoCanvas,
-                    altoCanvas,
-                    bomba.x,
-                    bomba.y - bomba.height,
-                    bomba.width,
-                    bomba.height
-                );
-            } else {        //Animacion de bomba explotando
-                if (bomba.cuadroActual === 0 && !bomba.sonidoReproducido) {
-                    iniciarSonido(sonidoExplosion);
-                    bomba.sonidoReproducido = true;
-                }
-                let cuadro = bomba.cuadroActual;
-                let anchoCanvas = 200;
-                let altoCanvas = 200;
-
-                ctx.drawImage(
-                    bomba.imagen,
-                    bomba.animacionExplosion[cuadro][0],
-                    bomba.animacionExplosion[cuadro][1],
-                    anchoCanvas,
-                    altoCanvas,
-                    bomba.x,
-                    bomba.y - bomba.height,
-                    bomba.width,
-                    bomba.height
-                );
-
-
-                if (Date.now() - bomba.ultimoTiempo > 150) {        // Cambia de cuadro del array cada 150ms
-                    bomba.cuadroActual++;
-                    bomba.ultimoTiempo = Date.now();
-                }
-
-                if (bomba.cuadroActual >= bomba.animacionExplosion.length) {       // Elimina la bomba del array cuando termina la animación
-                    vidas--;
-                    bombas.splice(index, 1);
-                    if (vidas <= 0) finPartida();
-                }
-            }
-        });
+    //Animaciones de las vidas extra
+    function animacionVidasExtra() {
+        posicionSpriteVidasExtra = (posicionSpriteVidasExtra + 1) % vidasExtra.spriteVidasExtra.length;
     }
 
-    function generarBomba() {
-        if (Math.random() < probabilidadBomba) {
-            const ultimoTronco = troncos[troncos.length - 1];
-            const penultimoTronco = troncos[troncos.length - 2];
-
-            // Calcula posición entre el penúltimo y último tronco
-            const posicionX = ((penultimoTronco.x + penultimoTronco.width * 0.53835) - bomba.width / 2) + (((ultimoTronco.x + ultimoTronco.width * 0.53835) - bomba.width / 2) - ((penultimoTronco.x + penultimoTronco.width * 0.53835) - bomba.width / 2)) / 2;
-
-            const posicionY = penultimoTronco.y - 10;
-
-            const nuevaBomba = new Bomba(posicionX, posicionY);
-            if (puntuación < 10) {
-                nuevaBomba.width = 20;
-                nuevaBomba.height = 20;
-            } else if (puntuación > 10 && puntuación < 20) {
-                nuevaBomba.width = 25;
-                nuevaBomba.height = 25;
-            } else if (puntuación > 20) {
-                nuevaBomba.width = 30;
-                nuevaBomba.height = 30;
+    //Inicia la animación del castor en su posición normal
+    function iniciarAnimaciónEstática() {
+        if (!intervaloEstático) {
+            if (idIntervaloCaminando) {
+                clearInterval(idIntervaloCaminando);
             }
-
-            bombas.push(nuevaBomba);
-            console.log("Bomba generada en:", posicionX, posicionY);
+            if (idIntervaloConstruyendo) {
+                clearInterval(idIntervaloConstruyendo);
+            }
+            if (idIntervaloSaltando) {
+                clearInterval(idIntervaloSaltando);
+            }
+            intervaloEstático = true;
+            intervaloCaminando = false;
+            intervaloConstruyendo = false;
+            intervaloSaltando = false;
+            idIntervaloEstático = setInterval(animacionEstática, 1000 / 8);
         }
     }
 
+    //Inicia la animación del castor caminando:
+    function iniciarAnimaciónCaminando() {
+        if (!intervaloCaminando) {
+            if (idIntervaloEstático) {
+                clearInterval(idIntervaloEstático);
+            }
+            if (idIntervaloConstruyendo) {
+                clearInterval(idIntervaloConstruyendo);
+            }
+            if (idIntervaloSaltando) {
+                clearInterval(idIntervaloSaltando);
+            }
+            intervaloCaminando = true;
+            intervaloEstático = false;
+            intervaloConstruyendo = false;
+            intervaloSaltando = false;
+            idIntervaloCaminando = setInterval(animacionCaminando, 1000 / 24);
+        }
+    }
 
+    //Inicia la animación del castor construyendo
+    function iniciarAnimaciónConstruyendo() {
+        if (!intervaloConstruyendo) {
+            if (idIntervaloEstático) {
+                clearInterval(idIntervaloEstático);
+            }
+            if (idIntervaloCaminando) {
+                clearInterval(idIntervaloCaminando);
+            }
+            if (idIntervaloSaltando) {
+                clearInterval(idIntervaloSaltando);
+            }
+            intervaloConstruyendo = true;
+            intervaloCaminando = false;
+            intervaloEstático = false;
+            intervaloSaltando = false;
+            idIntervaloConstruyendo = setInterval(animacionConstruyendo, 1000 / 10);
+        }
+    }
+
+    //Inicia la animación del castor saltando
+    function iniciarAnimaciónSaltando() {
+        if (!intervaloSaltando) {
+            if (idIntervaloEstático) {
+                clearInterval(idIntervaloEstático);
+            }
+            if (idIntervaloCaminando) {
+                clearInterval(idIntervaloCaminando);
+            }
+            if (idIntervaloConstruyendo) {
+                clearInterval(idIntervaloConstruyendo);
+            }
+            intervaloSaltando = true;
+            intervaloEstático = false;
+            intervaloCaminando = false;
+            intervaloConstruyendo = false;
+            idIntervaloSaltando = setInterval(animacionSaltando, 1000 / 6);
+        }
+    }
+
+    //OTRAS FUNCIONES
+
+    //Funcion que incrementa exponencialmente la probabilidad de que aparezcan bombas, para aumenrar la dificultad del juego de forma progresiva
     function actualizarProbabilidadBomba() {
-        probabilidadBomba = Math.min(1, 0.35 + puntuación * 0.005); // Aumenta exponencialmente hasta un máximo del 100% de probabilidad
+        probabilidadBomba = Math.min(1, 0.35 + puntuación * 0.005);
     }
 
-    function verificarColisionBombas() {
-        bombas.forEach((bomba, index) => {
-            if (castor.x < bomba.x + bomba.width &&
-                castor.x + castor.width > bomba.x &&
-                castor.y < bomba.y + bomba.height &&
-                castor.y + castor.height > bomba.y) {
-                iniciarSonido(sonidoExplosion);
-                bomba.explotando = true;
-
-            }
-        });
-    }
-
-    idIntervaloBomba = setInterval(animacionBombaEstatica, 1000 / 6);
-    idIntervaloBomba = setInterval(animacionBombaExplotando, 1000 / 0.2);
-    //Salto
-
-
-    let velocidadSalto = 15;
-    let gravedad = 1;
-
-
-    let cooldown = 1100;            //Tiempo de espera entre saltos
-    let puedeSaltar = true;
-
-    document.addEventListener("keydown", (event) => {
-        if (event.code === "Space" && !castor.saltando && juegoIniciado && puedeSaltar) {
-            castor.saltando = true;
-            puedeSaltar = false;
-
-            realizarSalto();
-
-            setTimeout(() => {
-                puedeSaltar = true;
-            }, cooldown);
-        }
-    });
+    //Funcion que realiza el salto del castor
     function realizarSalto() {
         if (castor.saltando) {
 
@@ -928,98 +941,140 @@ window.onload = function () {
         }
     }
 
-    imagenBomba = new Image();
-    imagenBomba.src = "Assets/Images/sprite-bomba.png";
-    Bomba.prototype.imagen = imagenBomba;
-    bomba = new Bomba(x_Bomba, y_Bomba);
+    //COLISIONES
 
-
-    //VIDAS
-    const vidasExtraArray = [];
-    let x_VidasExtra = 110;
-    let y_VidasExtra = 450;
-    let vidasExtra;
-    let probabilidadVidasExtra = 0.1;
-    let posicionSpriteVidasExtra=0;
-
-    function VidasExtra(x_, y_) {
-        this.x = x_;
-        this.y = y_;
-        this.width = 25;
-        this.height = 25;
-        this.spriteVidasExtra = [
-            [17, 25], [186, 27], [354, 25], [522, 25], [691, 25], [57, 188], [198, 187], [354, 187], [509, 187], [665, 188] //w: 115 h: 110
-        ];
+    //Colisiones del tronco generado por el jugador con las plataformas
+    function colisionTroncoPlataforma() {
+        const troncoSuperior = linea.height;
+        const plataformaInicial = linea.x + linea.height * Math.cos(linea.angle);
+        console.log(troncoSuperior);
+        const plataformaIzquierda = troncos[1].x + (0.2767 * troncos[1].width);             //He sacado el 27,67% en GIMP, dejando fuera la parte del tronco no visible
+        const plataformaDerecha = troncos[1].x + (0.8 * troncos[1].width);                  //He sacado el 80% en GIMP, dejando fuera la parte del tronco no visible
+        const plataformaArriba = troncos[1].y;
+        console.log(plataformaIzquierda);
+        console.log(plataformaInicial);
+        console.log(plataformaIzquierda - plataformaInicial);
+        if (troncoSuperior >= (plataformaIzquierda - plataformaInicial) && troncoSuperior <= (plataformaDerecha - plataformaInicial)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
-    function animacionVidasExtra() {
-        posicionSpriteVidasExtra = (posicionSpriteVidasExtra + 1) % vidasExtra.spriteVidasExtra.length;
+    //Colisiones del tronco generado por el jugador con el techo
+    function colisionTroncoTecho() {
+        if (linea.y - linea.height <= 0) {
+            linea.creciendo = false;
+            linea.cayendo = true;
+
+            velocidadAngular = Math.PI / 160;
+            requestAnimationFrame(animarCaida);
+        }
     }
 
-    idIntervaloVidasExtra = setInterval(animacionVidasExtra, 1000 / 6);
+    //Colision de las bombas con el castor
+    function verificarColisionBombas() {
+        bombas.forEach((bomba, index) => {
+            if (castor.x < bomba.x + bomba.width &&
+                castor.x + castor.width > bomba.x &&
+                castor.y < bomba.y + bomba.height &&
+                castor.y + castor.height > bomba.y) {
+                iniciarSonido(sonidoExplosion);
+                bomba.explotando = true;
 
-
+            }
+        });
+    }
+    //Colision de las vidas extra con el castor
     function verificarColisionVidasExtra() {
         vidasExtraArray.forEach((vidasExtra, index) => {
             if (castor.x < vidasExtra.x + vidasExtra.width &&
                 castor.x + castor.width > vidasExtra.x &&
                 castor.y < vidasExtra.y + vidasExtra.height &&
                 castor.y + castor.height > vidasExtra.y) {
-                if(vidas<3){
-                vidas++;
+                if (vidas < 3) {
+                    vidas++;
                 }
                 iniciarSonido(sonidoVidaExtra);
-                vidasExtraArray.splice(index, 1); 
+                vidasExtraArray.splice(index, 1);
             }
         });
     }
-    
 
 
-    function dibujarVidasExtra() {
-        vidasExtraArray.forEach((vidasExtra, index) => {
-                anchoCanvas = 115;
-                altoCanvas = 110;
-                vidasExtra.width = 20;
-                vidasExtra.height = 20;
-                vidasExtra.y = 450;
-                console.log(vidasExtraArray[0].y);
-                ctx.drawImage(
-                    vidasExtra.imagen,
-                    vidasExtra.spriteVidasExtra[posicionSpriteVidasExtra][0],
-                    vidasExtra.spriteVidasExtra[posicionSpriteVidasExtra][1],
-                    anchoCanvas,
-                    altoCanvas,
-                    vidasExtra.x,
-                    vidasExtra.y,
-                    vidasExtra.width,
-                    vidasExtra.height
-                );
-        }
-        )
+    // EVENTOS
+
+    //Carga el fondo del juego
+    fondo.onload = function () {
+        dibujarFondo();
     };
 
-    function generarVidasExtra() {
-        if (Math.random() <= probabilidadVidasExtra) {
-            const ultimoTronco = troncos[troncos.length - 1];
-            const penultimoTronco = troncos[troncos.length - 2];
+    // Inicia la partida al hacer click en el botón
+    botonIniciar.onclick = iniciarPartida;
 
-            // Calcula posición entre el penúltimo y último tronco
-            const posicionX = ((penultimoTronco.x + penultimoTronco.width * 0.53835) - vidasExtra.width / 2) + (((ultimoTronco.x + ultimoTronco.width * 0.53835) - vidasExtra.width / 2) - ((penultimoTronco.x + penultimoTronco.width * 0.53835) - vidasExtra.width / 2)) / 2;
-
-            const posicionY = penultimoTronco.y - 10;
-
-            const nuevaVidasExtra = new VidasExtra(posicionX, posicionY);
-
-            vidasExtraArray.push(nuevaVidasExtra);
-            console.log("Vida generada en:", posicionX, posicionY);
+    //Cuando se pulsa el ratón se genera un tronco hacia arriba
+    canvas.addEventListener("mousedown", () => {
+        if (juegoIniciado && !linea.cayendo) {
+            iniciarSonido(sonidoConstruyendo);
+            linea.creciendo = true;
         }
-    }
+    });
 
+    //Cuando se deja de pulsar el ratón el tronco deja de crecer y cae hacia la derecha
+    canvas.addEventListener("mouseup", () => {
+        if (juegoIniciado && linea.creciendo) {
+            detenerSonido(sonidoConstruyendo);
+            linea.creciendo = false;
+            linea.cayendo = true;
+            velocidadAngular = Math.PI / 160;
+            requestAnimationFrame(animarCaida);
+        }
+    });
 
+    //Cuando se pulsa la barra espaciadora el castor salta
+    document.addEventListener("keydown", (event) => {
+        if (event.code === "Space" && !castor.saltando && juegoIniciado && puedeSaltar) {
+            castor.saltando = true;
+            puedeSaltar = false;
+
+            realizarSalto();
+
+            setTimeout(() => {
+                puedeSaltar = true;
+            }, cooldown);
+        }
+    });
+
+    //INICIALIZACIÓN
+
+    //Le asigna la imagen del sprite al castor
+    imagen = new Image();
+    imagen.src = "Assets/Images/sprite-castor.png";
+    Castor.prototype.imagen = imagen;
+    castor = new Castor(x, y);
+
+    //Le asigna la imagen del sprite a la bomba
+    imagenBomba = new Image();
+    imagenBomba.src = "Assets/Images/sprite-bomba.png";
+    Bomba.prototype.imagen = imagenBomba;
+    bomba = new Bomba(x_Bomba, y_Bomba);
+
+    //Le asigna la imagen del sprite a las vidas extra
     imagenVidasExtra = new Image();
     imagenVidasExtra.src = "Assets/Images/sprite-vidas.png";
     VidasExtra.prototype.imagen = imagenVidasExtra;
     vidasExtra = new VidasExtra(x_VidasExtra, y_VidasExtra);
+
+    mostrarLeaderboard();       //Llama a la función que muestra el marcador
+
+    //Aumenta la velocidad de caída del tronco:
+    velocidadAngular += 0.01 * Math.pow(linea.angle, 2);
+
+    //Asigna los intervalos de las animaciones
+    //Intervalos de las bombas
+    idIntervaloBomba = setInterval(animacionBombaEstatica, 1000 / 6);
+    idIntervaloBomba = setInterval(animacionBombaExplotando, 1000 / 0.2);
+    //Intervalo de las vidas extra
+    idIntervaloVidasExtra = setInterval(animacionVidasExtra, 1000 / 6);
 
 };
