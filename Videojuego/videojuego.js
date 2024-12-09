@@ -939,7 +939,7 @@ window.onload = function () {
     let x_VidasExtra = 110;
     let y_VidasExtra = 450;
     let vidasExtra;
-    let probabilidadVidasExtra = 1;
+    let probabilidadVidasExtra = 0.1;
     let posicionSpriteVidasExtra=0;
 
     function VidasExtra(x_, y_) {
