@@ -246,7 +246,7 @@ window.onload = function () {
 
         leaderboard.sort((a, b) => b - a);
 
-        leaderboard = leaderboard.slice(0, 5);
+        leaderboard = leaderboard.slice(0, 10);
 
         localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
 
@@ -321,30 +321,29 @@ window.onload = function () {
 
     //Dibuja la puntuación actual del jugador
     function dibujarPuntuación() {
-
-        let incremento = 0;                 //Aumenta el tamaño de la barra de puntuación según la puntuación para evitar que se salga del marco
+        let incremento = 0;                                     //Aumenta el tamaño de la barra de puntuación según la puntuación para evitar que se salga del marco
         if (puntuación >= 100) {
-            incremento = 24;
+            incremento = 28;
         } else if (puntuación >= 10) {
             incremento = 12;
         }
-        ctx.fillStyle = "lightgrey";
-        ctx.fillRect(50, 55, 200 + incremento, 60);
+        ctx.fillStyle = "lightgreen";                            //Rectangulo del fondo
+        ctx.fillRect(50, 55, 240 + incremento, 60);
 
-        ctx.strokeStyle = "black";
+        ctx.strokeStyle = "black";                              //Borde del rectangulo
         ctx.lineWidth = 2;
-        ctx.strokeRect(50, 55, 200 + incremento, 60);
+        ctx.strokeRect(50, 55, 240 + incremento, 60);
 
-        ctx.font = "30px Arial";
+        ctx.font = "28px Arial";                                 //Texto de la puntuación                        
         ctx.fillStyle = "black";
-        ctx.fillText("Puntuación: " + puntuación, 55, 95);
+        ctx.fillText("PUNTUACIÓN: " + puntuación, 60, 95);
 
     }
 
     //Dibuja las vidas actuales del jugador
     function dibujarVidas() {
         ctx.font = "50px Arial";
-        ctx.fillStyle = "lightgrey";
+        ctx.fillStyle = "lightgreen";
         ctx.fillRect(845, 55, 200, 60);
 
         ctx.strokeStyle = "black";
@@ -932,7 +931,6 @@ window.onload = function () {
                 velocidadSalto -= gravedad;
             }
 
-
             if (castor.y >= 560) {
                 castor.y = 560;
                 castor.saltando = false;
@@ -948,7 +946,7 @@ window.onload = function () {
     function colisionTroncoPlataforma() {
         const troncoSuperior = linea.height;
         const plataformaInicial = linea.x + linea.height * Math.cos(linea.angle);
-        const plataformaIzquierda = troncos[1].x + (0.2767 * troncos[1].width);             //He sacado el 27,67% en GIMP, dejando fuera la parte del tronco no visible
+        const plataformaIzquierda = troncos[1].x + (0.28 * troncos[1].width);             //He sacado el 28% en GIMP, dejando fuera la parte del tronco no visible
         const plataformaDerecha = troncos[1].x + (0.8 * troncos[1].width);                  //He sacado el 80% en GIMP, dejando fuera la parte del tronco no visible
         if (troncoSuperior >= (plataformaIzquierda - plataformaInicial) && troncoSuperior <= (plataformaDerecha - plataformaInicial)) {
             return true;
