@@ -23,9 +23,11 @@ window.onload = function () {
     let intervaloEstático = false;
     let intervaloCaminando = false;
     let intervaloConstruyendo = false;
+    let intervaloSaltando = false;
     let idIntervaloEstático;
     let idIntervaloCaminando;
     let idIntervaloConstruyendo;
+    let idIntervaloSaltando;
     let velocidadAngular = 0;
     let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
 
@@ -48,6 +50,9 @@ window.onload = function () {
         this.animacionCastorConstruyendo = [
             [153, 16], [3, 200], [53, 204], [3, 200]    //Posicion construyendo
         ];
+        this.animacionCastorSaltando = [
+            [3, 133], [52, 128], [86, 128], [125, 131], [176, 128], [228, 128], [264, 140], [312, 135]     //h:47 w:46 ; h:52 w:31 ; h:48 w:36 ; h:33 w:48 ; h:43 w:48 ; h:53 w:33; h:41 w:45; h:38 w:48
+        ]
     }
 
     tronco.width = 30;
@@ -109,9 +114,10 @@ window.onload = function () {
 
         if (saltando) {
             realizarSalto();
+            dibujarSaltando();
         }
 
-        if (linea.creciendo && !castor.cruzando) {
+        else if (linea.creciendo && !castor.cruzando) {
             dibujarConstruyendo();
         } else if (castor.cruzando && !linea.creciendo) {
             dibujarCaminando();
@@ -150,9 +156,11 @@ window.onload = function () {
         clearInterval(idIntervaloEstático);
         clearInterval(idIntervaloCaminando);
         clearInterval(idIntervaloConstruyendo);
+        clearInterval(idIntervaloSaltando);
         intervaloEstático = false;
         intervaloCaminando = false;
         intervaloConstruyendo = false;
+        intervaloSaltando = false;
     }
 
     function actualizarLeaderboard(nuevaPuntuacion) {                   //Actualiza el marcador         
@@ -288,6 +296,10 @@ window.onload = function () {
         posicion = (posicion + 1) % castor.animacionCastorConstruyendo.length;
     }
 
+    function animacionSaltando() {
+        posicion = (posicion + 1) % castor.animacionCastorSaltando.length;
+    }
+
     function iniciarAnimaciónEstática() {               //Inicia la animación del castor en su posición normal
         if (!intervaloEstático) {
             if (idIntervaloCaminando) {
@@ -296,10 +308,14 @@ window.onload = function () {
             if (idIntervaloConstruyendo) {
                 clearInterval(idIntervaloConstruyendo);
             }
+            if (idIntervaloSaltando) {
+                clearInterval(idIntervaloSaltando);
+            }
             intervaloEstático = true;
             intervaloCaminando = false;
             intervaloConstruyendo = false;
-            idIntervaloEstático = setInterval(animacionEstática, 1000 / 6);
+            intervaloSaltando = false;
+            idIntervaloEstático = setInterval(animacionEstática, 1000 / 8);
         }
     }
 
@@ -311,9 +327,13 @@ window.onload = function () {
             if (idIntervaloConstruyendo) {
                 clearInterval(idIntervaloConstruyendo);
             }
+            if (idIntervaloSaltando) {
+                clearInterval(idIntervaloSaltando);
+            }
             intervaloCaminando = true;
             intervaloEstático = false;
             intervaloConstruyendo = false;
+            intervaloSaltando = false;
             idIntervaloCaminando = setInterval(animacionCaminando, 1000 / 24);
         }
     }
@@ -326,10 +346,33 @@ window.onload = function () {
             if (idIntervaloCaminando) {
                 clearInterval(idIntervaloCaminando);
             }
+            if (idIntervaloSaltando) {
+                clearInterval(idIntervaloSaltando);
+            }
             intervaloConstruyendo = true;
             intervaloCaminando = false;
             intervaloEstático = false;
+            intervaloSaltando = false;
             idIntervaloConstruyendo = setInterval(animacionConstruyendo, 1000 / 10);
+        }
+    }
+
+    function iniciarAnimaciónSaltando() {               //Inicia la animación del castor saltando
+        if (!intervaloSaltando) {
+            if (idIntervaloEstático) {
+                clearInterval(idIntervaloEstático);
+            }
+            if (idIntervaloCaminando) {
+                clearInterval(idIntervaloCaminando);
+            }
+            if (idIntervaloConstruyendo) {
+                clearInterval(idIntervaloConstruyendo);
+            }
+            intervaloSaltando = true;
+            intervaloEstático = false;
+            intervaloCaminando = false;
+            intervaloConstruyendo = false;
+            idIntervaloSaltando = setInterval(animacionSaltando, 1000 / 6);
         }
     }
 
@@ -427,6 +470,46 @@ window.onload = function () {
                 castor.height);
         }
     }
+    function dibujarSaltando() {
+        iniciarAnimaciónSaltando();
+        if (posicion == 0) {                     //h:47 w:46 ; h:52 w:31 ; h:48 w:36 ; h:33 w:48 ; h:43 w:48 ; h:53 w:33; h:41 w:45; h:38 w:48
+            castor.width = 46;
+            castor.height = 47;
+        } else if (posicion == 1) {
+            castor.width = 31;
+            castor.height = 52;
+        } else if (posicion == 2) { 
+            castor.width = 36;
+            castor.height = 48;
+        } else if (posicion == 3) {
+            castor.width = 48;
+            castor.height = 33;
+        } else if (posicion == 4) {
+            castor.width = 48;
+            castor.height = 43;
+        } else if (posicion == 5) {
+            castor.width = 33;
+            castor.height = 53;
+        } else if (posicion == 6) {
+            castor.width = 45;
+            castor.height = 41;
+        } else if (posicion == 7) {
+            castor.width = 48;
+            castor.height = 38;
+        }
+        if (posicion <= 7) {
+            ctx.drawImage(castor.imagen,
+                castor.animacionCastorSaltando[posicion][0],
+                castor.animacionCastorSaltando[posicion][1],
+                castor.width,
+                castor.height,
+                castor.x,
+                castor.y + 3,
+                castor.width,
+                castor.height);
+        }
+
+    }
 
     //MOVIMIENTO
     function moverCastor() {
@@ -454,16 +537,6 @@ window.onload = function () {
             bomba.x -= distanciaRecorrida;
         });
         troncos.shift();
-
-        /*     if(troncos.shift()){
-                 bombaNace = bombaNace - 1;
-                 if(bombaNace < 0){
-                     bombas.shift();
-                 }
-                 bomba.x = troncos[bombaNace].x + troncos[bombaNace].width / 2;
-                 
-             }
-             bomba.y = troncos[0].y - bomba.height;*/
 
         // Genera un nuevo tronco al final del array
         let ancho = Math.random() * 100 + 50;
@@ -778,6 +851,7 @@ window.onload = function () {
                 castor.y = 560;
                 saltando = false;
                 velocidadSalto = 15;
+                posicion = 0;
             }
         }
     }
